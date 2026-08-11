@@ -1,0 +1,17 @@
+{
+  "name": "@hotela/ui",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./components/index.ts",
+  "types": "./components/index.ts",
+  "peerDependencies": {
+    "react": "^18.3.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.0",
+    "@radix-ui/react-dropdown-menu": "^2.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

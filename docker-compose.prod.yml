@@ -1,0 +1,23 @@
+services:
+  postgres:
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    restart: always
+
+  api:
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+
+  ai-service:
+    restart: always
+    build:
+      context: ./backend/apps/ai-service
+    environment:
+      ENVIRONMENT: production

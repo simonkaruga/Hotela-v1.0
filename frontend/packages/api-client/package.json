@@ -1,0 +1,17 @@
+{
+  "name": "@hotela/api-client",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./hooks/index.ts",
+  "types": "./hooks/index.ts",
+  "scripts": {
+    "generate": "openapi-typescript ../../../backend/apps/api/openapi.json -o ./generated/schema.d.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.59.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.4.0",
+    "typescript": "^5.6.0"
+  }
+}

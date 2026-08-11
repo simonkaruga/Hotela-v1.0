@@ -1,0 +1,133 @@
+// Master database schema — shared by @hotela/api (NestJS) via @prisma/client.
+// Phase 0/1 scope only: core PMS tables needed to run reservations, front desk,
+// and folios. Every other module folder in this repo is a structural placeholder
+// until its phase (see /docs/architecture.md and the masterplan Section 15).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Property {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  timezone  String   @default("Africa/Nairobi")
+  currency  String   @default("KES")
+  createdAt DateTime @default(now())
+
+  roomTypes    RoomType[]
+  rooms        Room[]
+  guests       Guest[]
+  reservations Reservation[]
+}
+
+model RoomType {
+  id         String  @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  name       String
+  baseRate   Decimal @db.Decimal(10, 2)
+  maxOccupancy Int
+
+  rooms Room[]
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  roomTypeId String
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id])
+  number     String
+  floor      String?
+  status     RoomStatus @default(CLEAN)
+
+  reservations Reservation[]
+
+  @@unique([propertyId, number])
+}
+
+enum RoomStatus {
+  CLEAN
+  DIRTY
+  INSPECTED
+  OUT_OF_ORDER
+  OUT_OF_SERVICE
+}
+
+model Guest {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  firstName  String
+  lastName   String
+  email      String?
+  phone      String?
+  idNumber   String?
+  createdAt  DateTime @default(now())
+
+  reservations Reservation[]
+}
+
+model Reservation {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  guestId    String
+  guest      Guest    @relation(fields: [guestId], references: [id])
+  roomId     String?
+  room       Room?    @relation(fields: [roomId], references: [id])
+  checkIn    DateTime
+  checkOut   DateTime
+  status     ReservationStatus @default(CONFIRMED)
+  createdAt  DateTime @default(now())
+
+  folio Folio?
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+model Folio {
+  id            String   @id @default(uuid())
+  reservationId String   @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  status        FolioStatus @default(OPEN)
+  createdAt     DateTime @default(now())
+
+  transactions FolioTransaction[]
+}
+
+enum FolioStatus {
+  OPEN
+  SETTLED
+  VOID
+}
+
+model FolioTransaction {
+  id        String   @id @default(uuid())
+  folioId   String
+  folio     Folio    @relation(fields: [folioId], references: [id])
+  type      TransactionType
+  amount    Decimal  @db.Decimal(10, 2)
+  description String
+  createdAt DateTime @default(now())
+}
+
+enum TransactionType {
+  ROOM_CHARGE
+  PAYMENT
+  REFUND
+  ADJUSTMENT
+  TAX
+}

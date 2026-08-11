@@ -1,0 +1,17 @@
+{
+  "name": "@hotela/database",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./prisma/index.ts",
+  "scripts": {
+    "generate": "prisma generate --schema=./prisma/schema.prisma",
+    "migrate:dev": "prisma migrate dev --schema=./prisma/schema.prisma",
+    "migrate:deploy": "prisma migrate deploy --schema=./prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "hotela-backend",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run start:dev --workspace=apps/api",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "migrate": "ts-node scripts/migrate.ts",
+    "seed": "ts-node scripts/seed.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "ts-node": "^10.9.0"
+  },
+  "packageManager": "npm@10.8.0"
+}

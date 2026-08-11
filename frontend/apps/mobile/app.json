@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Hotela Staff",
+    "slug": "hotela-staff",
+    "scheme": "hotela-staff",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "plugins": ["expo-router"],
+    "ios": { "supportsTablet": true },
+    "android": {}
+  }
+}

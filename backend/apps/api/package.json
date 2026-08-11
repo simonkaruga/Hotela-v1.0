@@ -1,0 +1,35 @@
+{
+  "name": "@hotela/api",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "jest",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.4.0",
+    "@nestjs/core": "^10.4.0",
+    "@nestjs/platform-express": "^10.4.0",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.0",
+    "@nestjs/bullmq": "^10.2.0",
+    "bullmq": "^5.16.0",
+    "@prisma/client": "^5.20.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.0",
+    "@nestjs/testing": "^10.4.0",
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.0",
+    "jest": "^29.7.0"
+  }
+}
