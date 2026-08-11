@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import path from 'path';
-import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import { PrismaClient, UserRole } from '@prisma/client';
 
 config({ path: path.join(__dirname, '../apps/api/.env') });
 
@@ -59,8 +60,24 @@ async function main() {
     });
   }
 
+  const demoUsers: { email: string; role: UserRole }[] = [
+    { email: 'gm@naivasharesort.com', role: 'GENERAL_MANAGER' },
+    { email: 'frontdesk@naivasharesort.com', role: 'FRONT_DESK' },
+    { email: 'nightaudit@naivasharesort.com', role: 'NIGHT_AUDIT' },
+    { email: 'housekeeping@naivasharesort.com', role: 'HOUSEKEEPING_SUPERVISOR' },
+  ];
+  const passwordHash = await bcrypt.hash('password123', 10);
+  for (const u of demoUsers) {
+    await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: { propertyId: property.id, email: u.email, role: u.role, passwordHash },
+    });
+  }
+
   console.log('Seeded:');
   console.log({ propertyId: property.id, roomTypeId: roomType.id, roomId: room.id, guestId: guest.id });
+  console.log('Demo users (password: password123):', demoUsers.map((u) => `${u.email} [${u.role}]`));
 }
 
 main()

@@ -24,6 +24,24 @@ model Property {
   rooms        Room[]
   guests       Guest[]
   reservations Reservation[]
+  users        User[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id])
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+}
+
+enum UserRole {
+  FRONT_DESK
+  NIGHT_AUDIT
+  HOUSEKEEPING_SUPERVISOR
+  GENERAL_MANAGER
 }
 
 model RoomType {

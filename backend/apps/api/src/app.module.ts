@@ -5,6 +5,8 @@ import { ReservationsModule } from './modules/reservations/reservations.module';
 import { GuestsModule } from './modules/guests/guests.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Controller()
 class HealthController {
@@ -18,10 +20,12 @@ class HealthController {
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    AuthModule,
     ReservationsModule,
     GuestsModule,
     RoomsModule,
     BillingModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
 })
