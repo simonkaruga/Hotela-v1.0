@@ -69,6 +69,7 @@ model Guest {
   email      String?
   phone      String?
   idNumber   String?
+  vip        Boolean  @default(false)
   createdAt  DateTime @default(now())
 
   reservations Reservation[]
