@@ -7,6 +7,7 @@ import { RoomsModule } from './modules/rooms/rooms.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { PosModule } from './modules/pos/pos.module';
 
 @Controller()
 class HealthController {
@@ -26,6 +27,7 @@ class HealthController {
     RoomsModule,
     BillingModule,
     ReportsModule,
+    PosModule,
   ],
   controllers: [HealthController],
 })

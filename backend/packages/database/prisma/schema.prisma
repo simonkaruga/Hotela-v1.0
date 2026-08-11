@@ -25,6 +25,7 @@ model Property {
   guests       Guest[]
   reservations Reservation[]
   users        User[]
+  menuItems    MenuItem[]
 }
 
 model User {
@@ -106,7 +107,8 @@ model Reservation {
   status     ReservationStatus @default(CONFIRMED)
   createdAt  DateTime @default(now())
 
-  folio Folio?
+  folio  Folio?
+  orders Order[]
 }
 
 enum ReservationStatus {
@@ -145,8 +147,47 @@ model FolioTransaction {
 
 enum TransactionType {
   ROOM_CHARGE
+  FNB_CHARGE
   PAYMENT
   REFUND
   ADJUSTMENT
   TAX
+}
+
+model MenuItem {
+  id         String  @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  name       String
+  price      Decimal @db.Decimal(10, 2)
+  category   String?
+  available  Boolean @default(true)
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  status        OrderStatus @default(OPEN)
+  createdAt     DateTime    @default(now())
+
+  items OrderItem[]
+}
+
+enum OrderStatus {
+  OPEN
+  POSTED
+  VOID
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity   Int
+  unitPrice  Decimal  @db.Decimal(10, 2)
 }

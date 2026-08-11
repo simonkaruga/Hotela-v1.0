@@ -17,36 +17,49 @@ async function getFolios(): Promise<Folio[]> {
   return res.json();
 }
 
-export default async function FoliosPage() {
-  const folios = await getFolios();
-
-  if (folios.length === 0) {
-    return <main>Folios — none yet.</main>;
-  }
+export default async function FoliosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const [folios, { error }] = await Promise.all([getFolios(), searchParams]);
 
   return (
     <main>
       <h1>Folios</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Guest</th>
-            <th>Room</th>
-            <th>Status</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {folios.map((f) => (
-            <tr key={f.id}>
-              <td>{f.reservation.guest.firstName} {f.reservation.guest.lastName}</td>
-              <td>{f.reservation.room?.number ?? "—"}</td>
-              <td>{f.status}</td>
-              <td>{f.balance.toLocaleString()}</td>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {folios.length === 0 ? (
+        <p>None yet.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Status</th>
+              <th>Balance</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {folios.map((f) => (
+              <tr key={f.id}>
+                <td>{f.reservation.guest.firstName} {f.reservation.guest.lastName}</td>
+                <td>{f.reservation.room?.number ?? "—"}</td>
+                <td>{f.status}</td>
+                <td>{f.balance.toLocaleString()}</td>
+                <td>
+                  {f.status === "OPEN" && (
+                    <form action={`/api/folios/${f.id}/settle`} method="POST">
+                      <button type="submit">Settle</button>
+                    </form>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </main>
   );
 }

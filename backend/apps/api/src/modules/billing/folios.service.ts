@@ -3,7 +3,7 @@ import { FolioTransaction, TransactionType } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 
-const DEBIT_TYPES: TransactionType[] = ['ROOM_CHARGE', 'TAX'];
+const DEBIT_TYPES: TransactionType[] = ['ROOM_CHARGE', 'FNB_CHARGE', 'TAX'];
 const CREDIT_TYPES: TransactionType[] = ['PAYMENT', 'REFUND'];
 
 function computeBalance(transactions: FolioTransaction[]): number {

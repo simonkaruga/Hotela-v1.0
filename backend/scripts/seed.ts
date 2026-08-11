@@ -75,9 +75,22 @@ async function main() {
     });
   }
 
+  const menuItems = [
+    { name: 'Grilled Tilapia', price: 1800, category: 'Main' },
+    { name: 'Club Sandwich', price: 950, category: 'Light Bites' },
+    { name: 'Tusker Lager', price: 350, category: 'Bar' },
+  ];
+  for (const item of menuItems) {
+    const existing = await prisma.menuItem.findFirst({ where: { propertyId: property.id, name: item.name } });
+    if (!existing) {
+      await prisma.menuItem.create({ data: { propertyId: property.id, ...item } });
+    }
+  }
+
   console.log('Seeded:');
   console.log({ propertyId: property.id, roomTypeId: roomType.id, roomId: room.id, guestId: guest.id });
   console.log('Demo users (password: password123):', demoUsers.map((u) => `${u.email} [${u.role}]`));
+  console.log('Menu items:', menuItems.map((m) => m.name));
 }
 
 main()
