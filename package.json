@@ -1,0 +1,13 @@
+{
+  "name": "hotela",
+  "private": true,
+  "scripts": {
+    "start": "bash scripts/start.sh",
+    "dev:api": "npm run dev --prefix backend",
+    "dev:web": "npm run dev --workspace=@hotela/web --prefix frontend",
+    "stop": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

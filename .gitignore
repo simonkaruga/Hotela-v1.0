@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Env files (real secrets — .env.example files stay tracked)
+.env
+.env.local
+.env.*.local
+!.env.example
+!*/.env.example
+
+# Build output
+.next/
+out/
+dist/
+build/
+.turbo/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Expo / React Native
+.expo/
+.expo-shared/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Prisma
+backend/packages/database/prisma/*.db

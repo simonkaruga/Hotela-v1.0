@@ -55,6 +55,26 @@ Phase order (see the masterplan for full detail):
 
 ## Local development
 
+### One command — frontend + backend together
+
+```bash
+npm install                              # root deps (concurrently) — one-time
+npm install --prefix frontend
+npm install --prefix backend
+cp frontend/apps/web/.env.local.example frontend/apps/web/.env.local
+cp backend/apps/api/.env.example backend/apps/api/.env
+
+npm start
+# → brings up Postgres + Redis + Elasticsearch (docker-compose up -d)
+# → runs the backend API and the web app together, labeled output
+# → web:  http://localhost:3000
+# → api:  http://localhost:4000
+
+npm stop                                 # stops the docker-compose infra
+```
+
+### Running each piece separately
+
 ```bash
 # Start Postgres + Redis + Elasticsearch (+ api/ai-service once they build)
 docker-compose up -d
