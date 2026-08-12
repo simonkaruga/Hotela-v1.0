@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { GeneralLedgerService } from './general-ledger.service';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -40,5 +40,12 @@ export class GeneralLedgerController {
   @Roles(UserRole.GENERAL_MANAGER, UserRole.NIGHT_AUDIT)
   getTrialBalance(@Query('propertyId') propertyId: string) {
     return this.ledgerService.getTrialBalance(propertyId);
+  }
+
+  @Post('post-folio/:folioId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.GENERAL_MANAGER, UserRole.NIGHT_AUDIT)
+  postFolioToGl(@Param('folioId') folioId: string) {
+    return this.ledgerService.postFolioToGl(folioId);
   }
 }

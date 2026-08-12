@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { FolioTransaction, TransactionType } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 const DEBIT_TYPES: TransactionType[] = ['ROOM_CHARGE', 'FNB_CHARGE', 'SPA_CHARGE', 'TAX'];
 const CREDIT_TYPES: TransactionType[] = ['PAYMENT', 'REFUND'];
@@ -17,7 +18,10 @@ function computeBalance(transactions: FolioTransaction[]): number {
 
 @Injectable()
 export class FoliosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly loyaltyService: LoyaltyService,
+  ) {}
 
   findAll(propertyId?: string) {
     return this.prisma.folio
@@ -69,10 +73,12 @@ export class FoliosService {
     if (Math.round(folio.balance * 100) !== 0) {
       throw new BadRequestException(`Cannot settle a folio with a non-zero balance (${folio.balance})`);
     }
-    return this.prisma.folio.update({
+    const settled = await this.prisma.folio.update({
       where: { id: folioId },
       data: { status: 'SETTLED' },
       include: { transactions: true },
     });
+    await this.loyaltyService.earnFromFolioSettle(folioId);
+    return settled;
   }
 }

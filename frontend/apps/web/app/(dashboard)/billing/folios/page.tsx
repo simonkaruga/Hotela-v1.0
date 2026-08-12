@@ -48,10 +48,15 @@ export default async function FoliosPage({
                 <td>{f.reservation.room?.number ?? "—"}</td>
                 <td>{f.status}</td>
                 <td>{f.balance.toLocaleString()}</td>
-                <td>
+                <td style={{ display: "flex", gap: "0.5rem" }}>
                   {f.status === "OPEN" && (
                     <form action={`/api/folios/${f.id}/settle`} method="POST">
                       <button type="submit">Settle</button>
+                    </form>
+                  )}
+                  {f.status === "SETTLED" && (
+                    <form action={`/api/accounting/post-folio/${f.id}`} method="POST">
+                      <button type="submit">Post to GL</button>
                     </form>
                   )}
                 </td>

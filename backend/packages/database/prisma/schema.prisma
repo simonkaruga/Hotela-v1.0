@@ -28,6 +28,12 @@ model Property {
   menuItems    MenuItem[]
   treatments   Treatment[]
   accounts     Account[]
+  suppliers         Supplier[]
+  inventoryItems    InventoryItem[]
+  purchaseOrders    PurchaseOrder[]
+  corporateAccounts CorporateAccount[]
+  employees         Employee[]
+  eventInquiries    EventInquiry[]
 }
 
 model User {
@@ -91,9 +97,34 @@ model Guest {
   phone      String?
   idNumber   String?
   vip        Boolean  @default(false)
+  loyaltyPoints Int         @default(0)
+  loyaltyTier   LoyaltyTier @default(BRONZE)
   createdAt  DateTime @default(now())
 
-  reservations Reservation[]
+  reservations        Reservation[]
+  loyaltyTransactions LoyaltyTransaction[]
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+model LoyaltyTransaction {
+  id          String                 @id @default(uuid())
+  guestId     String
+  guest       Guest                  @relation(fields: [guestId], references: [id])
+  type        LoyaltyTransactionType
+  points      Int
+  description String
+  createdAt   DateTime               @default(now())
+}
+
+enum LoyaltyTransactionType {
+  EARN
+  REDEEM
 }
 
 model Reservation {
@@ -146,6 +177,9 @@ model FolioTransaction {
   amount    Decimal  @db.Decimal(10, 2)
   description String
   createdAt DateTime @default(now())
+
+  journalEntryId String?       @unique
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
 }
 
 enum TransactionType {
@@ -255,7 +289,8 @@ model JournalEntry {
   description String
   createdAt   DateTime @default(now())
 
-  lines JournalLine[]
+  lines            JournalLine[]
+  folioTransaction FolioTransaction?
 }
 
 model JournalLine {
@@ -266,4 +301,169 @@ model JournalLine {
   account        Account      @relation(fields: [accountId], references: [id])
   debit          Decimal      @default(0) @db.Decimal(10, 2)
   credit         Decimal      @default(0) @db.Decimal(10, 2)
+}
+
+model Supplier {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  name       String
+  contact    String?
+  createdAt  DateTime @default(now())
+
+  purchaseOrders PurchaseOrder[]
+  invoices       SupplierInvoice[]
+}
+
+model InventoryItem {
+  id             String  @id @default(uuid())
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id])
+  name           String
+  unit           String
+  quantityOnHand Decimal @default(0) @db.Decimal(10, 2)
+  reorderLevel   Decimal @default(0) @db.Decimal(10, 2)
+
+  purchaseOrderItems PurchaseOrderItem[]
+}
+
+model PurchaseOrder {
+  id         String              @id @default(uuid())
+  propertyId String
+  property   Property            @relation(fields: [propertyId], references: [id])
+  supplierId String
+  supplier   Supplier            @relation(fields: [supplierId], references: [id])
+  status     PurchaseOrderStatus @default(DRAFT)
+  createdAt  DateTime            @default(now())
+
+  items           PurchaseOrderItem[]
+  supplierInvoice SupplierInvoice?
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  quantity        Decimal       @db.Decimal(10, 2)
+  unitCost        Decimal       @db.Decimal(10, 2)
+}
+
+model SupplierInvoice {
+  id              String   @id @default(uuid())
+  supplierId      String
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
+  purchaseOrderId String?  @unique
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  amount          Decimal  @db.Decimal(10, 2)
+  dueDate         DateTime
+  status          SupplierInvoiceStatus @default(UNPAID)
+  createdAt       DateTime @default(now())
+}
+
+enum SupplierInvoiceStatus {
+  UNPAID
+  PAID
+}
+
+model CorporateAccount {
+  id          String   @id @default(uuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+  name        String
+  creditLimit Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  invoices ArInvoice[]
+}
+
+model ArInvoice {
+  id                 String           @id @default(uuid())
+  corporateAccountId String
+  corporateAccount   CorporateAccount @relation(fields: [corporateAccountId], references: [id])
+  amount             Decimal          @db.Decimal(10, 2)
+  description        String
+  dueDate            DateTime
+  status             ArInvoiceStatus  @default(UNPAID)
+  createdAt          DateTime         @default(now())
+}
+
+enum ArInvoiceStatus {
+  UNPAID
+  PAID
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  firstName  String
+  lastName   String
+  department String
+  phone      String?
+  hireDate   DateTime
+  active     Boolean  @default(true)
+
+  shifts Shift[]
+}
+
+model Shift {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  date       DateTime
+  startTime  String
+  endTime    String
+  department String
+}
+
+model EventInquiry {
+  id             String             @id @default(uuid())
+  propertyId     String
+  property       Property           @relation(fields: [propertyId], references: [id])
+  contactName    String
+  contactEmail   String
+  eventDate      DateTime
+  expectedGuests Int
+  status         EventInquiryStatus @default(INQUIRY)
+  createdAt      DateTime           @default(now())
+
+  roomBlock RoomBlock?
+  quote     EventQuote?
+}
+
+enum EventInquiryStatus {
+  INQUIRY
+  QUOTED
+  CONFIRMED
+  CANCELLED
+}
+
+model RoomBlock {
+  id             String       @id @default(uuid())
+  eventInquiryId String       @unique
+  eventInquiry   EventInquiry @relation(fields: [eventInquiryId], references: [id])
+  startDate      DateTime
+  endDate        DateTime
+  roomsBlocked   Int
+  notes          String?
+  createdAt      DateTime     @default(now())
+}
+
+model EventQuote {
+  id             String       @id @default(uuid())
+  eventInquiryId String       @unique
+  eventInquiry   EventInquiry @relation(fields: [eventInquiryId], references: [id])
+  amount         Decimal      @db.Decimal(10, 2)
+  depositAmount  Decimal      @db.Decimal(10, 2)
+  depositPaid    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
 }

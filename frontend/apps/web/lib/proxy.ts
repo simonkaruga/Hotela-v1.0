@@ -14,3 +14,25 @@ export async function proxyPost(request: NextRequest, backendPath: string, redir
   }
   return NextResponse.redirect(url, 303);
 }
+
+export async function proxyFormPost(
+  request: NextRequest,
+  backendPath: string,
+  redirectPath: string,
+  buildBody: (form: FormData) => Record<string, unknown>,
+) {
+  const form = await request.formData();
+  const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+  const res = await fetch(`${apiUrl}${backendPath}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(buildBody(form)),
+  });
+
+  const url = new URL(redirectPath, request.url);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    url.searchParams.set("error", body.message ?? `Request failed (${res.status})`);
+  }
+  return NextResponse.redirect(url, 303);
+}

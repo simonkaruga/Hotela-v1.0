@@ -10,6 +10,11 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { PosModule } from './modules/pos/pos.module';
 import { SpaModule } from './modules/spa/spa.module';
 import { GeneralLedgerModule } from './modules/accounting/general-ledger/general-ledger.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+import { ProcurementModule } from './modules/procurement/procurement.module';
+import { AccountsReceivableModule } from './modules/accounting/accounts-receivable/accounts-receivable.module';
+import { HrModule } from './modules/hr/hr.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Controller()
 class HealthController {
@@ -32,6 +37,11 @@ class HealthController {
     PosModule,
     SpaModule,
     GeneralLedgerModule,
+    LoyaltyModule,
+    ProcurementModule,
+    AccountsReceivableModule,
+    HrModule,
+    EventsModule,
   ],
   controllers: [HealthController],
 })

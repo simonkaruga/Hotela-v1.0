@@ -1,7 +1,23 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { TransactionType } from '@prisma/client';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { CreateJournalEntryDto } from './dto/create-journal-entry.dto';
+
+// Default folio -> GL account mapping. Every charge debits Accounts Receivable (1100)
+// and credits the relevant revenue account; every payment/refund moves the balance
+// between Cash (1000) and AR. This is ONE reasonable convention, chosen and documented
+// here rather than left undecided -- change the codes below if the property's real
+// chart of accounts differs.
+const CHARGE_CREDIT_ACCOUNT_CODE: Partial<Record<TransactionType, string>> = {
+  ROOM_CHARGE: '4000',
+  FNB_CHARGE: '4100',
+  SPA_CHARGE: '4200',
+  TAX: '2100',
+};
+const AR_ACCOUNT_CODE = '1100';
+const CASH_ACCOUNT_CODE = '1000';
+const ADJUSTMENTS_ACCOUNT_CODE = '4900';
 
 @Injectable()
 export class GeneralLedgerService {
@@ -83,5 +99,74 @@ export class GeneralLedgerService {
     const totalCredits = Math.round(rows.reduce((sum, r) => sum + r.credit, 0) * 100) / 100;
 
     return { rows, totalDebits, totalCredits, balanced: totalDebits === totalCredits };
+  }
+
+  async postFolioToGl(folioId: string) {
+    const folio = await this.prisma.folio.findUnique({
+      where: { id: folioId },
+      include: { transactions: true, reservation: true },
+    });
+    if (!folio) {
+      throw new NotFoundException(`Folio ${folioId} not found`);
+    }
+
+    const propertyId = folio.reservation.propertyId;
+    const accounts = await this.prisma.account.findMany({ where: { propertyId } });
+    const accountByCode = new Map(accounts.map((a) => [a.code, a]));
+    const getAccount = (code: string) => {
+      const account = accountByCode.get(code);
+      if (!account) {
+        throw new BadRequestException(`Chart of accounts is missing required account code ${code}`);
+      }
+      return account;
+    };
+
+    const unposted = folio.transactions.filter((t) => !t.journalEntryId);
+    const posted: string[] = [];
+
+    for (const transaction of unposted) {
+      const amount = Math.abs(Number(transaction.amount));
+      let debitCode: string;
+      let creditCode: string;
+
+      if (transaction.type === 'PAYMENT') {
+        debitCode = CASH_ACCOUNT_CODE;
+        creditCode = AR_ACCOUNT_CODE;
+      } else if (transaction.type === 'REFUND') {
+        debitCode = AR_ACCOUNT_CODE;
+        creditCode = CASH_ACCOUNT_CODE;
+      } else if (transaction.type === 'ADJUSTMENT') {
+        const positive = Number(transaction.amount) >= 0;
+        debitCode = positive ? AR_ACCOUNT_CODE : ADJUSTMENTS_ACCOUNT_CODE;
+        creditCode = positive ? ADJUSTMENTS_ACCOUNT_CODE : AR_ACCOUNT_CODE;
+      } else {
+        debitCode = AR_ACCOUNT_CODE;
+        creditCode = CHARGE_CREDIT_ACCOUNT_CODE[transaction.type] as string;
+      }
+
+      const debitAccount = getAccount(debitCode);
+      const creditAccount = getAccount(creditCode);
+
+      const entry = await this.prisma.journalEntry.create({
+        data: {
+          propertyId,
+          date: transaction.createdAt,
+          description: `Folio ${folioId}: ${transaction.description}`,
+          lines: {
+            create: [
+              { accountId: debitAccount.id, debit: amount, credit: 0 },
+              { accountId: creditAccount.id, debit: 0, credit: amount },
+            ],
+          },
+        },
+      });
+      await this.prisma.folioTransaction.update({
+        where: { id: transaction.id },
+        data: { journalEntryId: entry.id },
+      });
+      posted.push(transaction.id);
+    }
+
+    return { folioId, transactionsPosted: posted.length, alreadyPosted: folio.transactions.length - unposted.length };
   }
 }

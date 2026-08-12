@@ -106,6 +106,8 @@ async function main() {
     { code: '4000', name: 'Room Revenue', type: 'REVENUE' },
     { code: '4100', name: 'F&B Revenue', type: 'REVENUE' },
     { code: '4200', name: 'Spa Revenue', type: 'REVENUE' },
+    { code: '4900', name: 'Adjustments & Discounts', type: 'REVENUE' },
+    { code: '2100', name: 'Tax Payable', type: 'LIABILITY' },
     { code: '5000', name: 'Operating Expenses', type: 'EXPENSE' },
   ];
   for (const a of accounts) {
@@ -116,12 +118,50 @@ async function main() {
     });
   }
 
+  let supplier = await prisma.supplier.findFirst({ where: { propertyId: property.id, name: 'Naivasha Fresh Produce Ltd' } });
+  if (!supplier) {
+    supplier = await prisma.supplier.create({
+      data: { propertyId: property.id, name: 'Naivasha Fresh Produce Ltd', contact: '+254711000000' },
+    });
+  }
+
+  let inventoryItem = await prisma.inventoryItem.findFirst({ where: { propertyId: property.id, name: 'Tilapia (kg)' } });
+  if (!inventoryItem) {
+    inventoryItem = await prisma.inventoryItem.create({
+      data: { propertyId: property.id, name: 'Tilapia (kg)', unit: 'kg', reorderLevel: 10 },
+    });
+  }
+
+  let corporateAccount = await prisma.corporateAccount.findFirst({ where: { propertyId: property.id, name: 'Acme Safaris Ltd' } });
+  if (!corporateAccount) {
+    corporateAccount = await prisma.corporateAccount.create({
+      data: { propertyId: property.id, name: 'Acme Safaris Ltd', creditLimit: 200000 },
+    });
+  }
+
+  let employee = await prisma.employee.findFirst({ where: { propertyId: property.id, firstName: 'Kevin', lastName: 'Otieno' } });
+  if (!employee) {
+    employee = await prisma.employee.create({
+      data: {
+        propertyId: property.id,
+        firstName: 'Kevin',
+        lastName: 'Otieno',
+        department: 'Front Office',
+        phone: '+254722000000',
+        hireDate: new Date('2025-01-15'),
+      },
+    });
+  }
+
   console.log('Seeded:');
   console.log({ propertyId: property.id, roomTypeId: roomType.id, roomId: room.id, guestId: guest.id });
   console.log('Demo users (password: password123):', demoUsers.map((u) => `${u.email} [${u.role}]`));
   console.log('Menu items:', menuItems.map((m) => m.name));
   console.log('Treatments:', treatments.map((t) => t.name));
   console.log('Accounts:', accounts.map((a) => `${a.code} ${a.name}`));
+  console.log('Supplier:', supplier.name, '| Inventory item:', inventoryItem.name);
+  console.log('Corporate account:', corporateAccount.name);
+  console.log('Employee:', employee.firstName, employee.lastName);
 }
 
 main()
