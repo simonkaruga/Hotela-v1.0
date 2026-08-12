@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import path from 'path';
 import * as bcrypt from 'bcryptjs';
-import { PrismaClient, UserRole } from '@prisma/client';
+import { AccountType, PrismaClient, UserRole } from '@prisma/client';
 
 config({ path: path.join(__dirname, '../apps/api/.env') });
 
@@ -87,10 +87,41 @@ async function main() {
     }
   }
 
+  const treatments = [
+    { name: 'Swedish Massage', price: 4500, durationMinutes: 60 },
+    { name: 'Facial Treatment', price: 3200, durationMinutes: 45 },
+  ];
+  for (const t of treatments) {
+    const existing = await prisma.treatment.findFirst({ where: { propertyId: property.id, name: t.name } });
+    if (!existing) {
+      await prisma.treatment.create({ data: { propertyId: property.id, ...t } });
+    }
+  }
+
+  const accounts: { code: string; name: string; type: AccountType }[] = [
+    { code: '1000', name: 'Cash and Bank', type: 'ASSET' },
+    { code: '1100', name: 'Accounts Receivable', type: 'ASSET' },
+    { code: '2000', name: 'Accounts Payable', type: 'LIABILITY' },
+    { code: '3000', name: "Owner's Equity", type: 'EQUITY' },
+    { code: '4000', name: 'Room Revenue', type: 'REVENUE' },
+    { code: '4100', name: 'F&B Revenue', type: 'REVENUE' },
+    { code: '4200', name: 'Spa Revenue', type: 'REVENUE' },
+    { code: '5000', name: 'Operating Expenses', type: 'EXPENSE' },
+  ];
+  for (const a of accounts) {
+    await prisma.account.upsert({
+      where: { propertyId_code: { propertyId: property.id, code: a.code } },
+      update: {},
+      create: { propertyId: property.id, ...a },
+    });
+  }
+
   console.log('Seeded:');
   console.log({ propertyId: property.id, roomTypeId: roomType.id, roomId: room.id, guestId: guest.id });
   console.log('Demo users (password: password123):', demoUsers.map((u) => `${u.email} [${u.role}]`));
   console.log('Menu items:', menuItems.map((m) => m.name));
+  console.log('Treatments:', treatments.map((t) => t.name));
+  console.log('Accounts:', accounts.map((a) => `${a.code} ${a.name}`));
 }
 
 main()

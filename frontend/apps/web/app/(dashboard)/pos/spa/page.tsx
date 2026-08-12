@@ -1,0 +1,132 @@
+type Treatment = { id: string; name: string; price: string; durationMinutes: number };
+type Reservation = {
+  id: string;
+  guest: { firstName: string; lastName: string };
+  room: { number: string } | null;
+};
+type Appointment = {
+  id: string;
+  status: string;
+  therapistName: string;
+  scheduledAt: string;
+  reservation: { guest: { firstName: string; lastName: string } };
+  treatment: { name: string; price: string };
+};
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+async function getTreatments(): Promise<Treatment[]> {
+  const res = await fetch(`${apiUrl}/spa/treatments`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load treatments: ${res.status}`);
+  return res.json();
+}
+
+async function getCheckedInReservations(): Promise<Reservation[]> {
+  const res = await fetch(`${apiUrl}/reservations?status=CHECKED_IN`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load reservations: ${res.status}`);
+  return res.json();
+}
+
+async function getAppointments(): Promise<Appointment[]> {
+  const res = await fetch(`${apiUrl}/spa/appointments`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load appointments: ${res.status}`);
+  return res.json();
+}
+
+export default async function SpaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const [treatments, reservations, appointments, { error }] = await Promise.all([
+    getTreatments(),
+    getCheckedInReservations(),
+    getAppointments(),
+    searchParams,
+  ]);
+
+  return (
+    <main>
+      <h1>Spa</h1>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <h2>Book appointment</h2>
+      {reservations.length === 0 ? (
+        <p>No checked-in guests to book for.</p>
+      ) : (
+        <form action="/api/spa/appointments" method="POST" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxWidth: "400px" }}>
+          <label>
+            Guest / room
+            <select name="reservationId" required style={{ display: "block", width: "100%" }}>
+              {reservations.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.guest.firstName} {r.guest.lastName} — Room {r.room?.number ?? "?"}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Treatment
+            <select name="treatmentId" required style={{ display: "block", width: "100%" }}>
+              {treatments.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} ({t.durationMinutes}min, {Number(t.price).toLocaleString()})
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Therapist
+            <input name="therapistName" required style={{ display: "block", width: "100%" }} />
+          </label>
+          <label>
+            Scheduled at
+            <input type="datetime-local" name="scheduledAt" required style={{ display: "block", width: "100%" }} />
+          </label>
+          <button type="submit">Book</button>
+        </form>
+      )}
+
+      <h2>Appointments</h2>
+      {appointments.length === 0 ? (
+        <p>No appointments yet.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Treatment</th>
+              <th>Therapist</th>
+              <th>Scheduled</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((a) => (
+              <tr key={a.id}>
+                <td>{a.reservation.guest.firstName} {a.reservation.guest.lastName}</td>
+                <td>{a.treatment.name} ({Number(a.treatment.price).toLocaleString()})</td>
+                <td>{a.therapistName}</td>
+                <td>{new Date(a.scheduledAt).toLocaleString()}</td>
+                <td>{a.status}</td>
+                <td style={{ display: "flex", gap: "0.5rem" }}>
+                  {a.status === "BOOKED" && (
+                    <>
+                      <form action={`/api/spa/appointments/${a.id}/post-to-folio`} method="POST">
+                        <button type="submit">Post to folio</button>
+                      </form>
+                      <form action={`/api/spa/appointments/${a.id}/cancel`} method="POST">
+                        <button type="submit">Cancel</button>
+                      </form>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </main>
+  );
+}

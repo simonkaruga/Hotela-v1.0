@@ -26,6 +26,8 @@ model Property {
   reservations Reservation[]
   users        User[]
   menuItems    MenuItem[]
+  treatments   Treatment[]
+  accounts     Account[]
 }
 
 model User {
@@ -107,8 +109,9 @@ model Reservation {
   status     ReservationStatus @default(CONFIRMED)
   createdAt  DateTime @default(now())
 
-  folio  Folio?
-  orders Order[]
+  folio        Folio?
+  orders       Order[]
+  appointments Appointment[]
 }
 
 enum ReservationStatus {
@@ -148,6 +151,7 @@ model FolioTransaction {
 enum TransactionType {
   ROOM_CHARGE
   FNB_CHARGE
+  SPA_CHARGE
   PAYMENT
   REFUND
   ADJUSTMENT
@@ -190,4 +194,76 @@ model OrderItem {
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   quantity   Int
   unitPrice  Decimal  @db.Decimal(10, 2)
+}
+
+model Treatment {
+  id              String  @id @default(uuid())
+  propertyId      String
+  property        Property @relation(fields: [propertyId], references: [id])
+  name            String
+  price           Decimal @db.Decimal(10, 2)
+  durationMinutes Int
+  available       Boolean @default(true)
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id            String            @id @default(uuid())
+  reservationId String
+  reservation   Reservation       @relation(fields: [reservationId], references: [id])
+  treatmentId   String
+  treatment     Treatment         @relation(fields: [treatmentId], references: [id])
+  therapistName String
+  scheduledAt   DateTime
+  status        AppointmentStatus @default(BOOKED)
+  createdAt     DateTime          @default(now())
+}
+
+enum AppointmentStatus {
+  BOOKED
+  POSTED
+  CANCELLED
+}
+
+model Account {
+  id         String      @id @default(uuid())
+  propertyId String
+  property   Property    @relation(fields: [propertyId], references: [id])
+  code       String
+  name       String
+  type       AccountType
+  createdAt  DateTime    @default(now())
+
+  journalLines JournalLine[]
+
+  @@unique([propertyId, code])
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+model JournalEntry {
+  id          String   @id @default(uuid())
+  propertyId  String
+  date        DateTime
+  description String
+  createdAt   DateTime @default(now())
+
+  lines JournalLine[]
+}
+
+model JournalLine {
+  id             String       @id @default(uuid())
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id])
+  accountId      String
+  account        Account      @relation(fields: [accountId], references: [id])
+  debit          Decimal      @default(0) @db.Decimal(10, 2)
+  credit         Decimal      @default(0) @db.Decimal(10, 2)
 }

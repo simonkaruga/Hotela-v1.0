@@ -8,6 +8,8 @@ import { BillingModule } from './modules/billing/billing.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { PosModule } from './modules/pos/pos.module';
+import { SpaModule } from './modules/spa/spa.module';
+import { GeneralLedgerModule } from './modules/accounting/general-ledger/general-ledger.module';
 
 @Controller()
 class HealthController {
@@ -28,6 +30,8 @@ class HealthController {
     BillingModule,
     ReportsModule,
     PosModule,
+    SpaModule,
+    GeneralLedgerModule,
   ],
   controllers: [HealthController],
 })
