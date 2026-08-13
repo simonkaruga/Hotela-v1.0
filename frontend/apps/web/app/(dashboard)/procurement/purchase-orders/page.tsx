@@ -1,4 +1,7 @@
 import { authHeaders } from "../../../../lib/auth";
+import { Card } from "../../../../components/Card";
+import { Badge } from "../../../../components/Badge";
+import { ErrorBanner } from "../../../../components/ErrorBanner";
 
 type Supplier = { id: string; name: string; contact: string | null };
 type InventoryItem = { id: string; name: string; unit: string; quantityOnHand: string; reorderLevel: string };
@@ -44,107 +47,139 @@ export default async function PurchaseOrdersPage({
   ]);
 
   if (suppliers === "forbidden") {
-    return <main><h1>Procurement</h1><p>Sign in to view procurement.</p></main>;
+    return (
+      <>
+        <h1>Procurement</h1>
+        <p className="mt-4 text-sm text-slate-500">Sign in to view procurement.</p>
+      </>
+    );
   }
 
   return (
-    <main>
+    <>
       <h1>Procurement</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
 
       <h2>Suppliers</h2>
-      <ul>{(suppliers as Supplier[]).map((s) => <li key={s.id}>{s.name} {s.contact ? `(${s.contact})` : ""}</li>)}</ul>
-      <form action="/api/procurement/suppliers" method="POST" style={{ display: "flex", gap: "0.5rem", maxWidth: "400px" }}>
+      <Card className="mt-3">
+        <table>
+          <tbody>
+            {(suppliers as Supplier[]).map((s) => (
+              <tr key={s.id}>
+                <td className="font-medium">{s.name}</td>
+                <td className="text-slate-500">{s.contact ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+      <form action="/api/procurement/suppliers" method="POST" className="mt-3 flex flex-wrap items-end gap-3">
         <input type="hidden" name="propertyId" value={propertyId} />
-        <input name="name" placeholder="Supplier name" required />
-        <input name="contact" placeholder="Contact" />
-        <button type="submit">Add supplier</button>
+        <label>Supplier name<input name="name" required /></label>
+        <label>Contact<input name="contact" /></label>
+        <button type="submit" className="secondary">Add supplier</button>
       </form>
 
       <h2>Inventory</h2>
-      <table>
-        <thead><tr><th>Item</th><th>Unit</th><th>On hand</th><th>Reorder level</th></tr></thead>
-        <tbody>
-          {(inventoryItems as InventoryItem[]).map((i) => (
-            <tr key={i.id}><td>{i.name}</td><td>{i.unit}</td><td>{i.quantityOnHand}</td><td>{i.reorderLevel}</td></tr>
-          ))}
-        </tbody>
-      </table>
-      <form action="/api/procurement/inventory-items" method="POST" style={{ display: "flex", gap: "0.5rem", maxWidth: "500px" }}>
+      <Card className="mt-3">
+        <table>
+          <thead><tr><th>Item</th><th>Unit</th><th className="text-right">On hand</th><th className="text-right">Reorder level</th></tr></thead>
+          <tbody>
+            {(inventoryItems as InventoryItem[]).map((i) => {
+              const low = Number(i.quantityOnHand) <= Number(i.reorderLevel);
+              return (
+                <tr key={i.id}>
+                  <td className="font-medium">{i.name}</td>
+                  <td className="text-slate-500">{i.unit}</td>
+                  <td className={`text-right ${low ? "font-medium text-red-600" : ""}`}>{i.quantityOnHand}</td>
+                  <td className="text-right text-slate-500">{i.reorderLevel}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
+      <form action="/api/procurement/inventory-items" method="POST" className="mt-3 flex flex-wrap items-end gap-3">
         <input type="hidden" name="propertyId" value={propertyId} />
-        <input name="name" placeholder="Item name" required />
-        <input name="unit" placeholder="Unit (kg, box...)" required />
-        <input type="number" name="reorderLevel" placeholder="Reorder level" min="0" />
-        <button type="submit">Add item</button>
+        <label>Item name<input name="name" required /></label>
+        <label>Unit<input name="unit" placeholder="kg, box..." required /></label>
+        <label>Reorder level<input type="number" name="reorderLevel" min="0" /></label>
+        <button type="submit" className="secondary">Add item</button>
       </form>
 
       <h2>New purchase order</h2>
-      <form action="/api/procurement/purchase-orders" method="POST" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxWidth: "400px" }}>
+      <form action="/api/procurement/purchase-orders" method="POST" className="mt-3 flex max-w-md flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <input type="hidden" name="propertyId" value={propertyId} />
         <label>
           Supplier
-          <select name="supplierId" required style={{ display: "block", width: "100%" }}>
+          <select name="supplierId" required className="block w-full">
             {(suppliers as Supplier[]).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </label>
         <label>
           Item
-          <select name="inventoryItemId" required style={{ display: "block", width: "100%" }}>
+          <select name="inventoryItemId" required className="block w-full">
             {(inventoryItems as InventoryItem[]).map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
           </select>
         </label>
-        <label>Quantity <input type="number" name="quantity" min="0.01" step="0.01" required style={{ display: "block", width: "100%" }} /></label>
-        <label>Unit cost <input type="number" name="unitCost" min="0.01" step="0.01" required style={{ display: "block", width: "100%" }} /></label>
-        <button type="submit">Create PO</button>
+        <label>Quantity <input type="number" name="quantity" min="0.01" step="0.01" required className="block w-full" /></label>
+        <label>Unit cost <input type="number" name="unitCost" min="0.01" step="0.01" required className="block w-full" /></label>
+        <button type="submit" className="mt-1 w-fit">Create PO</button>
       </form>
 
       <h2>Purchase orders</h2>
-      <table>
-        <thead><tr><th>Supplier</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          {(purchaseOrders as PurchaseOrder[]).map((po) => (
-            <tr key={po.id}>
-              <td>{po.supplier.name}</td>
-              <td>{po.items.map((it) => `${it.quantity} ${it.inventoryItem.name} @ ${it.unitCost}`).join(", ")}</td>
-              <td>{po.status}</td>
-              <td style={{ display: "flex", gap: "0.5rem" }}>
-                {po.status === "DRAFT" && (
-                  <form action={`/api/procurement/purchase-orders/${po.id}/mark-ordered`} method="POST">
-                    <button type="submit">Mark ordered</button>
-                  </form>
-                )}
-                {po.status === "ORDERED" && (
-                  <form action={`/api/procurement/purchase-orders/${po.id}/receive`} method="POST">
-                    <button type="submit">Receive</button>
-                  </form>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Card className="mt-3">
+        <table>
+          <thead><tr><th>Supplier</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {(purchaseOrders as PurchaseOrder[]).map((po) => (
+              <tr key={po.id}>
+                <td className="font-medium">{po.supplier.name}</td>
+                <td className="text-slate-600">{po.items.map((it) => `${it.quantity} ${it.inventoryItem.name} @ ${it.unitCost}`).join(", ")}</td>
+                <td><Badge status={po.status} /></td>
+                <td>
+                  <div className="flex gap-2">
+                    {po.status === "DRAFT" && (
+                      <form action={`/api/procurement/purchase-orders/${po.id}/mark-ordered`} method="POST">
+                        <button type="submit" className="secondary">Mark ordered</button>
+                      </form>
+                    )}
+                    {po.status === "ORDERED" && (
+                      <form action={`/api/procurement/purchase-orders/${po.id}/receive`} method="POST">
+                        <button type="submit">Receive</button>
+                      </form>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
 
       <h2>Supplier invoices</h2>
-      <table>
-        <thead><tr><th>Supplier</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          {(supplierInvoices as SupplierInvoice[]).map((inv) => (
-            <tr key={inv.id}>
-              <td>{inv.supplier.name}</td>
-              <td>{Number(inv.amount).toLocaleString()}</td>
-              <td>{new Date(inv.dueDate).toLocaleDateString()}</td>
-              <td>{inv.status}</td>
-              <td>
-                {inv.status === "UNPAID" && (
-                  <form action={`/api/procurement/supplier-invoices/${inv.id}/pay`} method="POST">
-                    <button type="submit">Pay</button>
-                  </form>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </main>
+      <Card className="mt-3">
+        <table>
+          <thead><tr><th>Supplier</th><th className="text-right">Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {(supplierInvoices as SupplierInvoice[]).map((inv) => (
+              <tr key={inv.id}>
+                <td className="font-medium">{inv.supplier.name}</td>
+                <td className="text-right">{Number(inv.amount).toLocaleString()}</td>
+                <td className="text-slate-500">{new Date(inv.dueDate).toLocaleDateString()}</td>
+                <td><Badge status={inv.status} /></td>
+                <td>
+                  {inv.status === "UNPAID" && (
+                    <form action={`/api/procurement/supplier-invoices/${inv.id}/pay`} method="POST">
+                      <button type="submit" className="secondary">Pay</button>
+                    </form>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </>
   );
 }

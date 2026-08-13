@@ -1,4 +1,7 @@
 import { authHeaders } from "../../../../lib/auth";
+import { Card } from "../../../../components/Card";
+import { Badge } from "../../../../components/Badge";
+import { ErrorBanner } from "../../../../components/ErrorBanner";
 
 type CorporateAccount = { id: string; name: string; creditLimit: string; outstandingBalance: number };
 type ArInvoice = {
@@ -41,68 +44,79 @@ export default async function AccountsReceivablePage({
   ]);
 
   if (accounts === "forbidden") {
-    return <main><h1>Accounts Receivable</h1><p>Sign in to view AR.</p></main>;
+    return (
+      <>
+        <h1>Accounts Receivable</h1>
+        <p className="mt-4 text-sm text-slate-500">Sign in to view AR.</p>
+      </>
+    );
   }
 
   return (
-    <main>
+    <>
       <h1>Accounts Receivable</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
 
       <h2>Corporate accounts</h2>
-      <table>
-        <thead><tr><th>Name</th><th>Credit limit</th><th>Outstanding</th></tr></thead>
-        <tbody>
-          {(accounts as CorporateAccount[]).map((a) => (
-            <tr key={a.id}>
-              <td>{a.name}</td>
-              <td>{Number(a.creditLimit).toLocaleString()}</td>
-              <td>{a.outstandingBalance.toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <form action="/api/ar/corporate-accounts" method="POST" style={{ display: "flex", gap: "0.5rem", maxWidth: "400px" }}>
+      <Card className="mt-3">
+        <table>
+          <thead><tr><th>Name</th><th className="text-right">Credit limit</th><th className="text-right">Outstanding</th></tr></thead>
+          <tbody>
+            {(accounts as CorporateAccount[]).map((a) => (
+              <tr key={a.id}>
+                <td className="font-medium">{a.name}</td>
+                <td className="text-right">{Number(a.creditLimit).toLocaleString()}</td>
+                <td className={`text-right ${a.outstandingBalance > 0 ? "font-medium text-amber-700" : "text-slate-500"}`}>
+                  {a.outstandingBalance.toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+      <form action="/api/ar/corporate-accounts" method="POST" className="mt-3 flex flex-wrap items-end gap-3">
         <input type="hidden" name="propertyId" value={propertyId} />
-        <input name="name" placeholder="Company name" required />
-        <input type="number" name="creditLimit" placeholder="Credit limit" min="1" required />
-        <button type="submit">Add account</button>
+        <label>Company name<input name="name" required /></label>
+        <label>Credit limit<input type="number" name="creditLimit" min="1" required /></label>
+        <button type="submit" className="secondary">Add account</button>
       </form>
 
       <h2>Invoices</h2>
-      <table>
-        <thead><tr><th>Company</th><th>Description</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          {(invoices as ArInvoice[]).map((inv) => (
-            <tr key={inv.id}>
-              <td>{inv.corporateAccount.name}</td>
-              <td>{inv.description}</td>
-              <td>{Number(inv.amount).toLocaleString()}</td>
-              <td>{new Date(inv.dueDate).toLocaleDateString()}</td>
-              <td>{inv.status}</td>
-              <td>
-                {inv.status === "UNPAID" && (
-                  <form action={`/api/ar/invoices/${inv.id}/pay`} method="POST">
-                    <button type="submit">Pay</button>
-                  </form>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <form action="/api/ar/invoices" method="POST" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxWidth: "400px" }}>
+      <Card className="mt-3">
+        <table>
+          <thead><tr><th>Company</th><th>Description</th><th className="text-right">Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {(invoices as ArInvoice[]).map((inv) => (
+              <tr key={inv.id}>
+                <td className="font-medium">{inv.corporateAccount.name}</td>
+                <td className="text-slate-600">{inv.description}</td>
+                <td className="text-right">{Number(inv.amount).toLocaleString()}</td>
+                <td className="text-slate-500">{new Date(inv.dueDate).toLocaleDateString()}</td>
+                <td><Badge status={inv.status} /></td>
+                <td>
+                  {inv.status === "UNPAID" && (
+                    <form action={`/api/ar/invoices/${inv.id}/pay`} method="POST">
+                      <button type="submit" className="secondary">Pay</button>
+                    </form>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+      <form action="/api/ar/invoices" method="POST" className="mt-3 flex max-w-md flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <label>
           Corporate account
-          <select name="corporateAccountId" required style={{ display: "block", width: "100%" }}>
+          <select name="corporateAccountId" required className="block w-full">
             {(accounts as CorporateAccount[]).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </label>
-        <label>Amount <input type="number" name="amount" min="1" required style={{ display: "block", width: "100%" }} /></label>
-        <label>Description <input name="description" required style={{ display: "block", width: "100%" }} /></label>
-        <label>Due date <input type="date" name="dueDate" required style={{ display: "block", width: "100%" }} /></label>
-        <button type="submit">Create invoice</button>
+        <label>Amount <input type="number" name="amount" min="1" required className="block w-full" /></label>
+        <label>Description <input name="description" required className="block w-full" /></label>
+        <label>Due date <input type="date" name="dueDate" required className="block w-full" /></label>
+        <button type="submit" className="mt-1 w-fit">Create invoice</button>
       </form>
-    </main>
+    </>
   );
 }

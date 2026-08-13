@@ -1,3 +1,7 @@
+import { Card } from "../../../../components/Card";
+import { Badge } from "../../../../components/Badge";
+import { ErrorBanner } from "../../../../components/ErrorBanner";
+
 type Treatment = { id: string; name: string; price: string; durationMinutes: number };
 type Reservation = {
   id: string;
@@ -46,18 +50,18 @@ export default async function SpaPage({
   ]);
 
   return (
-    <main>
+    <>
       <h1>Spa</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
 
       <h2>Book appointment</h2>
       {reservations.length === 0 ? (
-        <p>No checked-in guests to book for.</p>
+        <p className="mt-2 text-sm text-slate-500">No checked-in guests to book for.</p>
       ) : (
-        <form action="/api/spa/appointments" method="POST" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxWidth: "400px" }}>
+        <form action="/api/spa/appointments" method="POST" className="mt-3 flex max-w-md flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <label>
             Guest / room
-            <select name="reservationId" required style={{ display: "block", width: "100%" }}>
+            <select name="reservationId" required className="block w-full">
               {reservations.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.guest.firstName} {r.guest.lastName} — Room {r.room?.number ?? "?"}
@@ -67,7 +71,7 @@ export default async function SpaPage({
           </label>
           <label>
             Treatment
-            <select name="treatmentId" required style={{ display: "block", width: "100%" }}>
+            <select name="treatmentId" required className="block w-full">
               {treatments.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.durationMinutes}min, {Number(t.price).toLocaleString()})
@@ -77,56 +81,60 @@ export default async function SpaPage({
           </label>
           <label>
             Therapist
-            <input name="therapistName" required style={{ display: "block", width: "100%" }} />
+            <input name="therapistName" required className="block w-full" />
           </label>
           <label>
             Scheduled at
-            <input type="datetime-local" name="scheduledAt" required style={{ display: "block", width: "100%" }} />
+            <input type="datetime-local" name="scheduledAt" required className="block w-full" />
           </label>
-          <button type="submit">Book</button>
+          <button type="submit" className="mt-1 w-fit">Book</button>
         </form>
       )}
 
       <h2>Appointments</h2>
       {appointments.length === 0 ? (
-        <p>No appointments yet.</p>
+        <p className="mt-2 text-sm text-slate-500">No appointments yet.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Guest</th>
-              <th>Treatment</th>
-              <th>Therapist</th>
-              <th>Scheduled</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.map((a) => (
-              <tr key={a.id}>
-                <td>{a.reservation.guest.firstName} {a.reservation.guest.lastName}</td>
-                <td>{a.treatment.name} ({Number(a.treatment.price).toLocaleString()})</td>
-                <td>{a.therapistName}</td>
-                <td>{new Date(a.scheduledAt).toLocaleString()}</td>
-                <td>{a.status}</td>
-                <td style={{ display: "flex", gap: "0.5rem" }}>
-                  {a.status === "BOOKED" && (
-                    <>
-                      <form action={`/api/spa/appointments/${a.id}/post-to-folio`} method="POST">
-                        <button type="submit">Post to folio</button>
-                      </form>
-                      <form action={`/api/spa/appointments/${a.id}/cancel`} method="POST">
-                        <button type="submit">Cancel</button>
-                      </form>
-                    </>
-                  )}
-                </td>
+        <Card className="mt-3">
+          <table>
+            <thead>
+              <tr>
+                <th>Guest</th>
+                <th>Treatment</th>
+                <th>Therapist</th>
+                <th>Scheduled</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {appointments.map((a) => (
+                <tr key={a.id}>
+                  <td className="font-medium">{a.reservation.guest.firstName} {a.reservation.guest.lastName}</td>
+                  <td className="text-slate-600">{a.treatment.name} ({Number(a.treatment.price).toLocaleString()})</td>
+                  <td>{a.therapistName}</td>
+                  <td className="text-slate-500">{new Date(a.scheduledAt).toLocaleString()}</td>
+                  <td><Badge status={a.status} /></td>
+                  <td>
+                    <div className="flex gap-2">
+                      {a.status === "BOOKED" && (
+                        <>
+                          <form action={`/api/spa/appointments/${a.id}/post-to-folio`} method="POST">
+                            <button type="submit" className="secondary">Post to folio</button>
+                          </form>
+                          <form action={`/api/spa/appointments/${a.id}/cancel`} method="POST">
+                            <button type="submit" className="danger">Cancel</button>
+                          </form>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
-    </main>
+    </>
   );
 }

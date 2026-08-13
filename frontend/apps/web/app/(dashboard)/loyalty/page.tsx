@@ -1,4 +1,7 @@
 import { authHeaders } from "../../../lib/auth";
+import { Card } from "../../../components/Card";
+import { Badge } from "../../../components/Badge";
+import { ErrorBanner } from "../../../components/ErrorBanner";
 
 type Guest = { id: string; firstName: string; lastName: string; loyaltyPoints: number; loyaltyTier: string };
 type LoyaltyDetail = {
@@ -8,6 +11,12 @@ type LoyaltyDetail = {
 };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const TIER_STYLES: Record<string, string> = {
+  BRONZE: "bg-orange-50 text-orange-700",
+  SILVER: "bg-slate-100 text-slate-600",
+  GOLD: "bg-amber-50 text-amber-700",
+  PLATINUM: "bg-indigo-50 text-indigo-700",
+};
 
 async function getGuests(): Promise<Guest[]> {
   const res = await fetch(`${apiUrl}/guests`, { cache: "no-store" });
@@ -34,74 +43,81 @@ export default async function LoyaltyPage({
   const selected = guests.find((g) => g.id === guestId);
 
   return (
-    <main>
+    <>
       <h1>Loyalty</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
 
       <h2>Guests</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Points</th>
-            <th>Tier</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {guests.map((g) => (
-            <tr key={g.id}>
-              <td>{g.firstName} {g.lastName}</td>
-              <td>{g.loyaltyPoints}</td>
-              <td>{g.loyaltyTier}</td>
-              <td><a href={`/loyalty?guestId=${g.id}`}>View</a></td>
+      <Card className="mt-3">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Points</th>
+              <th>Tier</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {guests.map((g) => (
+              <tr key={g.id} className={g.id === guestId ? "bg-indigo-50/40" : ""}>
+                <td className="font-medium">{g.firstName} {g.lastName}</td>
+                <td>{g.loyaltyPoints}</td>
+                <td><span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${TIER_STYLES[g.loyaltyTier] ?? "bg-slate-100 text-slate-600"}`}>{g.loyaltyTier}</span></td>
+                <td><a href={`/loyalty?guestId=${g.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">View</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
 
       {guestId && selected && (
         <>
           <h2>{selected.firstName} {selected.lastName}</h2>
           {detail === "forbidden" ? (
-            <p>Your role cannot view redemption history (need to be logged in).</p>
+            <p className="mt-2 text-sm text-slate-500">Your role cannot view redemption history (need to be logged in).</p>
           ) : detail ? (
             <>
-              <p>Points: {detail.points} | Tier: {detail.tier}</p>
+              <p className="mt-2 text-sm text-slate-600">
+                <span className="font-semibold text-slate-900">{detail.points}</span> points ·{" "}
+                <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${TIER_STYLES[detail.tier] ?? ""}`}>{detail.tier}</span>
+              </p>
 
-              <form action="/api/loyalty/redeem" method="POST" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxWidth: "300px" }}>
+              <form action="/api/loyalty/redeem" method="POST" className="mt-4 flex max-w-sm flex-col gap-3">
                 <input type="hidden" name="guestId" value={guestId} />
                 <label>
                   Points to redeem
-                  <input type="number" name="points" min="1" required style={{ display: "block", width: "100%" }} />
+                  <input type="number" name="points" min="1" required className="block w-full" />
                 </label>
                 <label>
                   Description
-                  <input name="description" required style={{ display: "block", width: "100%" }} />
+                  <input name="description" required className="block w-full" />
                 </label>
-                <button type="submit">Redeem</button>
+                <button type="submit" className="w-fit">Redeem</button>
               </form>
 
-              <h3>History</h3>
-              <table>
-                <thead>
-                  <tr><th>Type</th><th>Points</th><th>Description</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                  {detail.transactions.map((t) => (
-                    <tr key={t.id}>
-                      <td>{t.type}</td>
-                      <td>{t.points}</td>
-                      <td>{t.description}</td>
-                      <td>{new Date(t.createdAt).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <h3 className="mt-6">History</h3>
+              <Card className="mt-2">
+                <table>
+                  <thead>
+                    <tr><th>Type</th><th>Points</th><th>Description</th><th>Date</th></tr>
+                  </thead>
+                  <tbody>
+                    {detail.transactions.map((t) => (
+                      <tr key={t.id}>
+                        <td><Badge status={t.type} /></td>
+                        <td>{t.points}</td>
+                        <td className="text-slate-600">{t.description}</td>
+                        <td className="text-slate-500">{new Date(t.createdAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
             </>
           ) : null}
         </>
       )}
-    </main>
+    </>
   );
 }

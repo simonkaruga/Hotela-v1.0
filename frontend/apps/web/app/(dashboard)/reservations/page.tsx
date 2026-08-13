@@ -1,3 +1,7 @@
+import { Card } from "../../../components/Card";
+import { Badge } from "../../../components/Badge";
+import { ErrorBanner } from "../../../components/ErrorBanner";
+
 type Reservation = {
   id: string;
   checkIn: string;
@@ -16,11 +20,11 @@ async function getReservations(): Promise<Reservation[]> {
   return res.json();
 }
 
-function ActionForm({ action, id, label }: { action: string; id: string; label: string }) {
+function ActionForm({ action, id, label, variant }: { action: string; id: string; label: string; variant?: "secondary" }) {
   return (
-    <form action={action} method="POST" style={{ display: "inline" }}>
+    <form action={action} method="POST" className="inline">
       <input type="hidden" name="id" value={id} />
-      <button type="submit">{label}</button>
+      <button type="submit" className={variant}>{label}</button>
     </form>
   );
 }
@@ -33,47 +37,51 @@ export default async function ReservationsPage({
   const [reservations, { error }] = await Promise.all([getReservations(), searchParams]);
 
   return (
-    <main>
+    <>
       <h1>Reservations</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
       {reservations.length === 0 ? (
-        <p>None yet.</p>
+        <p className="mt-4 text-sm text-slate-500">None yet.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Guest</th>
-              <th>Room</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reservations.map((r) => (
-              <tr key={r.id}>
-                <td>{r.guest.firstName} {r.guest.lastName}</td>
-                <td>{r.room?.number ?? "—"}</td>
-                <td>{new Date(r.checkIn).toLocaleDateString()}</td>
-                <td>{new Date(r.checkOut).toLocaleDateString()}</td>
-                <td>{r.status}</td>
-                <td style={{ display: "flex", gap: "0.5rem" }}>
-                  {r.status === "CONFIRMED" && (
-                    <>
-                      <ActionForm action={`/api/reservations/${r.id}/check-in`} id={r.id} label="Check in" />
-                      <ActionForm action={`/api/reservations/${r.id}/cancel`} id={r.id} label="Cancel" />
-                    </>
-                  )}
-                  {r.status === "CHECKED_IN" && (
-                    <ActionForm action={`/api/reservations/${r.id}/check-out`} id={r.id} label="Check out" />
-                  )}
-                </td>
+        <Card className="mt-4">
+          <table>
+            <thead>
+              <tr>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reservations.map((r) => (
+                <tr key={r.id}>
+                  <td className="font-medium">{r.guest.firstName} {r.guest.lastName}</td>
+                  <td>{r.room?.number ?? "—"}</td>
+                  <td>{new Date(r.checkIn).toLocaleDateString()}</td>
+                  <td>{new Date(r.checkOut).toLocaleDateString()}</td>
+                  <td><Badge status={r.status} /></td>
+                  <td>
+                    <div className="flex gap-2">
+                      {r.status === "CONFIRMED" && (
+                        <>
+                          <ActionForm action={`/api/reservations/${r.id}/check-in`} id={r.id} label="Check in" />
+                          <ActionForm action={`/api/reservations/${r.id}/cancel`} id={r.id} label="Cancel" variant="secondary" />
+                        </>
+                      )}
+                      {r.status === "CHECKED_IN" && (
+                        <ActionForm action={`/api/reservations/${r.id}/check-out`} id={r.id} label="Check out" />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
-    </main>
+    </>
   );
 }

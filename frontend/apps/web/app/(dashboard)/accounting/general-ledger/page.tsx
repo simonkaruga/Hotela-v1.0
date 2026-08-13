@@ -1,4 +1,6 @@
 import { authHeaders } from "../../../../lib/auth";
+import { Card } from "../../../../components/Card";
+import { ErrorBanner } from "../../../../components/ErrorBanner";
 
 type Account = { id: string; propertyId: string; code: string; name: string; type: string };
 type TrialBalanceRow = { code: string; name: string; type: string; debit: number; credit: number; balance: number };
@@ -28,24 +30,24 @@ export default async function GeneralLedgerPage({
   const [accounts, trialBalance, { error }] = await Promise.all([getAccounts(), getTrialBalance(), searchParams]);
 
   return (
-    <main>
+    <>
       <h1>General Ledger</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
 
       <h2>Post journal entry</h2>
-      <form action="/api/accounting/journal-entries" method="POST" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxWidth: "400px" }}>
+      <form action="/api/accounting/journal-entries" method="POST" className="mt-3 flex max-w-md flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <input type="hidden" name="propertyId" value={accounts[0]?.propertyId ?? ""} />
         <label>
           Date
-          <input type="date" name="date" required style={{ display: "block", width: "100%" }} />
+          <input type="date" name="date" required className="block w-full" />
         </label>
         <label>
           Description
-          <input name="description" required style={{ display: "block", width: "100%" }} />
+          <input name="description" required className="block w-full" />
         </label>
         <label>
           Debit account
-          <select name="debitAccountId" required style={{ display: "block", width: "100%" }}>
+          <select name="debitAccountId" required className="block w-full">
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
             ))}
@@ -53,7 +55,7 @@ export default async function GeneralLedgerPage({
         </label>
         <label>
           Credit account
-          <select name="creditAccountId" required style={{ display: "block", width: "100%" }}>
+          <select name="creditAccountId" required className="block w-full">
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
             ))}
@@ -61,48 +63,52 @@ export default async function GeneralLedgerPage({
         </label>
         <label>
           Amount
-          <input type="number" name="amount" min="0.01" step="0.01" required style={{ display: "block", width: "100%" }} />
+          <input type="number" name="amount" min="0.01" step="0.01" required className="block w-full" />
         </label>
-        <button type="submit">Post entry</button>
+        <button type="submit" className="mt-1 w-fit">Post entry</button>
       </form>
 
       <h2>Trial balance</h2>
       {trialBalance === "forbidden" ? (
-        <p>Your role cannot view the trial balance (General Manager or Night Audit only).</p>
+        <p className="mt-2 text-sm text-slate-500">Your role cannot view the trial balance (General Manager or Night Audit only).</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Account</th>
-              <th>Type</th>
-              <th>Debit</th>
-              <th>Credit</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {trialBalance.rows.map((r) => (
-              <tr key={r.code}>
-                <td>{r.code}</td>
-                <td>{r.name}</td>
-                <td>{r.type}</td>
-                <td>{r.debit.toLocaleString()}</td>
-                <td>{r.credit.toLocaleString()}</td>
-                <td>{r.balance.toLocaleString()}</td>
+        <Card className="mt-3">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Account</th>
+                <th>Type</th>
+                <th className="text-right">Debit</th>
+                <th className="text-right">Credit</th>
+                <th className="text-right">Balance</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan={3}><strong>Total</strong></td>
-              <td><strong>{trialBalance.totalDebits.toLocaleString()}</strong></td>
-              <td><strong>{trialBalance.totalCredits.toLocaleString()}</strong></td>
-              <td><strong>{trialBalance.balanced ? "Balanced" : "OUT OF BALANCE"}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody>
+              {trialBalance.rows.map((r) => (
+                <tr key={r.code}>
+                  <td className="text-slate-500">{r.code}</td>
+                  <td className="font-medium">{r.name}</td>
+                  <td className="text-slate-500">{r.type}</td>
+                  <td className="text-right">{r.debit.toLocaleString()}</td>
+                  <td className="text-right">{r.credit.toLocaleString()}</td>
+                  <td className="text-right">{r.balance.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-slate-200 bg-slate-50 font-semibold text-slate-900">
+                <td colSpan={3}>Total</td>
+                <td className="text-right">{trialBalance.totalDebits.toLocaleString()}</td>
+                <td className="text-right">{trialBalance.totalCredits.toLocaleString()}</td>
+                <td className={`text-right ${trialBalance.balanced ? "text-emerald-700" : "text-red-700"}`}>
+                  {trialBalance.balanced ? "Balanced" : "OUT OF BALANCE"}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </Card>
       )}
-    </main>
+    </>
   );
 }

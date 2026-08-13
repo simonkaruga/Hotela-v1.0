@@ -1,3 +1,5 @@
+import { Badge } from "../../../components/Badge";
+
 type Room = {
   id: string;
   number: string;
@@ -20,25 +22,37 @@ export default async function FrontDeskPage() {
   const rooms = await getRooms();
 
   if (rooms.length === 0) {
-    return <main>Front desk — no rooms yet.</main>;
+    return (
+      <>
+        <h1>Front Desk — Room Rack</h1>
+        <p className="mt-4 text-sm text-slate-500">No rooms yet.</p>
+      </>
+    );
   }
 
   return (
-    <main>
-      <h1>Front desk — room rack</h1>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
+    <>
+      <h1>Front Desk — Room Rack</h1>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {rooms.map((room) => {
           const occupant = room.reservations[0]?.guest;
           return (
-            <div key={room.id} style={{ border: "1px solid #ccc", padding: "0.75rem", minWidth: "140px" }}>
-              <strong>Room {room.number}</strong>
-              <div>{room.roomType.name}</div>
-              <div>Status: {room.status}</div>
-              <div>{occupant ? `${occupant.firstName} ${occupant.lastName}` : "Vacant"}</div>
+            <div
+              key={room.id}
+              className={`rounded-lg border p-4 shadow-sm ${occupant ? "border-indigo-200 bg-indigo-50/40" : "border-slate-200 bg-white"}`}
+            >
+              <div className="flex items-baseline justify-between">
+                <span className="text-lg font-semibold text-slate-900">{room.number}</span>
+                <Badge status={room.status} />
+              </div>
+              <p className="mt-1 text-xs text-slate-500">{room.roomType.name}</p>
+              <p className="mt-3 text-sm font-medium text-slate-800">
+                {occupant ? `${occupant.firstName} ${occupant.lastName}` : <span className="text-slate-400">Vacant</span>}
+              </p>
             </div>
           );
         })}
       </div>
-    </main>
+    </>
   );
 }

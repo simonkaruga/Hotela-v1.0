@@ -1,3 +1,7 @@
+import { Card } from "../../../../components/Card";
+import { Badge } from "../../../../components/Badge";
+import { ErrorBanner } from "../../../../components/ErrorBanner";
+
 type Folio = {
   id: string;
   status: string;
@@ -25,46 +29,52 @@ export default async function FoliosPage({
   const [folios, { error }] = await Promise.all([getFolios(), searchParams]);
 
   return (
-    <main>
+    <>
       <h1>Folios</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <ErrorBanner message={error} />
       {folios.length === 0 ? (
-        <p>None yet.</p>
+        <p className="mt-4 text-sm text-slate-500">None yet.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Guest</th>
-              <th>Room</th>
-              <th>Status</th>
-              <th>Balance</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {folios.map((f) => (
-              <tr key={f.id}>
-                <td>{f.reservation.guest.firstName} {f.reservation.guest.lastName}</td>
-                <td>{f.reservation.room?.number ?? "—"}</td>
-                <td>{f.status}</td>
-                <td>{f.balance.toLocaleString()}</td>
-                <td style={{ display: "flex", gap: "0.5rem" }}>
-                  {f.status === "OPEN" && (
-                    <form action={`/api/folios/${f.id}/settle`} method="POST">
-                      <button type="submit">Settle</button>
-                    </form>
-                  )}
-                  {f.status === "SETTLED" && (
-                    <form action={`/api/accounting/post-folio/${f.id}`} method="POST">
-                      <button type="submit">Post to GL</button>
-                    </form>
-                  )}
-                </td>
+        <Card className="mt-4">
+          <table>
+            <thead>
+              <tr>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Status</th>
+                <th>Balance</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {folios.map((f) => (
+                <tr key={f.id}>
+                  <td className="font-medium">{f.reservation.guest.firstName} {f.reservation.guest.lastName}</td>
+                  <td>{f.reservation.room?.number ?? "—"}</td>
+                  <td><Badge status={f.status} /></td>
+                  <td className={f.balance > 0 ? "font-medium text-amber-700" : "text-slate-500"}>
+                    {f.balance.toLocaleString()}
+                  </td>
+                  <td>
+                    <div className="flex gap-2">
+                      {f.status === "OPEN" && (
+                        <form action={`/api/folios/${f.id}/settle`} method="POST">
+                          <button type="submit">Settle</button>
+                        </form>
+                      )}
+                      {f.status === "SETTLED" && (
+                        <form action={`/api/accounting/post-folio/${f.id}`} method="POST">
+                          <button type="submit" className="secondary">Post to GL</button>
+                        </form>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
-    </main>
+    </>
   );
 }
