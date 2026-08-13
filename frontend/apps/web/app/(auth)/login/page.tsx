@@ -18,9 +18,9 @@ export default async function LoginPage({
           <div className="text-lg font-semibold tracking-tight text-white">Hotela</div>
 
           <div className="max-w-md">
-            <h2 className="!mt-0 text-3xl font-semibold leading-tight text-white">
+            <p className="text-3xl font-semibold normal-case leading-tight tracking-normal text-white">
               The hotel OS,<br />built for Naivasha and beyond.
-            </h2>
+            </p>
             <p className="mt-4 text-sm leading-relaxed text-indigo-200/80">
               One system for reservations, front desk, folios, restaurant &amp; spa,
               accounting, and everything in between — running Naivasha Lakeside Resort.
