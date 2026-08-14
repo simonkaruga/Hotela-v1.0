@@ -1,6 +1,8 @@
 import { authHeaders } from "../../../../lib/auth";
 import { Card } from "../../../../components/Card";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { GeneralLedgerIcon } from "../../../../components/icons";
 
 type Account = { id: string; propertyId: string; code: string; name: string; type: string };
 type TrialBalanceRow = { code: string; name: string; type: string; debit: number; credit: number; balance: number };
@@ -31,7 +33,7 @@ export default async function GeneralLedgerPage({
 
   return (
     <>
-      <h1>General Ledger</h1>
+      <PageHeader icon={GeneralLedgerIcon} group="back-office" title="General Ledger" description="Chart of accounts and trial balance." />
       <ErrorBanner message={error} />
 
       <h2>Post journal entry</h2>

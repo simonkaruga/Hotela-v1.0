@@ -1,6 +1,10 @@
 import { Card } from "../../../components/Card";
 import { Badge } from "../../../components/Badge";
 import { ErrorBanner } from "../../../components/ErrorBanner";
+import { PageHeader } from "../../../components/PageHeader";
+import { EmptyState } from "../../../components/EmptyState";
+import { Avatar } from "../../../components/Avatar";
+import { ReservationsIcon } from "../../../components/icons";
 
 type Reservation = {
   id: string;
@@ -38,10 +42,10 @@ export default async function ReservationsPage({
 
   return (
     <>
-      <h1>Reservations</h1>
+      <PageHeader icon={ReservationsIcon} group="front-office" title="Reservations" description="Check in, check out, and manage bookings." />
       <ErrorBanner message={error} />
       {reservations.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-500">None yet.</p>
+        <EmptyState icon={ReservationsIcon} title="No reservations yet" description="New bookings will show up here." />
       ) : (
         <Card className="mt-4">
           <table>
@@ -58,7 +62,12 @@ export default async function ReservationsPage({
             <tbody>
               {reservations.map((r) => (
                 <tr key={r.id}>
-                  <td className="font-medium">{r.guest.firstName} {r.guest.lastName}</td>
+                  <td>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={`${r.guest.firstName} ${r.guest.lastName}`} />
+                      <span className="font-medium">{r.guest.firstName} {r.guest.lastName}</span>
+                    </div>
+                  </td>
                   <td>{r.room?.number ?? "—"}</td>
                   <td>{new Date(r.checkIn).toLocaleDateString()}</td>
                   <td>{new Date(r.checkOut).toLocaleDateString()}</td>

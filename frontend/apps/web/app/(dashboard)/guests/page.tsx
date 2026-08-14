@@ -1,4 +1,8 @@
 import { Card } from "../../../components/Card";
+import { PageHeader } from "../../../components/PageHeader";
+import { EmptyState } from "../../../components/EmptyState";
+import { Avatar } from "../../../components/Avatar";
+import { GuestsIcon } from "../../../components/icons";
 
 type Guest = {
   id: string;
@@ -23,9 +27,9 @@ export default async function GuestsPage() {
 
   return (
     <>
-      <h1>Guests</h1>
+      <PageHeader icon={GuestsIcon} group="front-office" title="Guests" description="Profiles, VIP flags, and search." />
       {guests.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-500">None yet.</p>
+        <EmptyState icon={GuestsIcon} title="No guests yet" description="Guest profiles will appear here once created." />
       ) : (
         <Card className="mt-4">
           <table>
@@ -40,7 +44,12 @@ export default async function GuestsPage() {
             <tbody>
               {guests.map((g) => (
                 <tr key={g.id}>
-                  <td className="font-medium">{g.firstName} {g.lastName}</td>
+                  <td>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={`${g.firstName} ${g.lastName}`} />
+                      <span className="font-medium">{g.firstName} {g.lastName}</span>
+                    </div>
+                  </td>
                   <td className="text-slate-500">{g.email ?? "—"}</td>
                   <td className="text-slate-500">{g.phone ?? "—"}</td>
                   <td>{g.vip && <span className="text-amber-500">★</span>}</td>

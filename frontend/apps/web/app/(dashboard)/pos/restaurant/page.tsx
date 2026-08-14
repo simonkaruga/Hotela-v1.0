@@ -1,6 +1,10 @@
 import { Card } from "../../../../components/Card";
 import { Badge } from "../../../../components/Badge";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { EmptyState } from "../../../../components/EmptyState";
+import { Avatar } from "../../../../components/Avatar";
+import { RestaurantIcon } from "../../../../components/icons";
 
 type MenuItem = { id: string; name: string; price: string; category: string | null };
 type Reservation = {
@@ -50,12 +54,12 @@ export default async function RestaurantPosPage({
 
   return (
     <>
-      <h1>Restaurant &amp; Bar</h1>
+      <PageHeader icon={RestaurantIcon} group="guest-spend" title="Restaurant & Bar" description="Orders posted straight to room folios." />
       <ErrorBanner message={error} />
 
       <h2>New order</h2>
       {reservations.length === 0 ? (
-        <p className="mt-2 text-sm text-slate-500">No checked-in guests to order for.</p>
+        <EmptyState icon={RestaurantIcon} title="No checked-in guests" description="Orders can be placed once a guest is checked in." />
       ) : (
         <form action="/api/pos/orders" method="POST" className="mt-3 flex max-w-md flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <label>
@@ -82,7 +86,7 @@ export default async function RestaurantPosPage({
 
       <h2>Orders</h2>
       {orders.length === 0 ? (
-        <p className="mt-2 text-sm text-slate-500">No orders yet.</p>
+        <EmptyState icon={RestaurantIcon} title="No orders yet" description="Orders placed for in-house guests will show up here." />
       ) : (
         <Card className="mt-3">
           <table>
@@ -100,7 +104,12 @@ export default async function RestaurantPosPage({
                 const total = o.items.reduce((sum, i) => sum + Number(i.unitPrice) * i.quantity, 0);
                 return (
                   <tr key={o.id}>
-                    <td className="font-medium">{o.reservation.guest.firstName} {o.reservation.guest.lastName}</td>
+                    <td>
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={`${o.reservation.guest.firstName} ${o.reservation.guest.lastName}`} />
+                        <span className="font-medium">{o.reservation.guest.firstName} {o.reservation.guest.lastName}</span>
+                      </div>
+                    </td>
                     <td className="text-slate-600">{o.items.map((i) => `${i.quantity}x ${i.menuItem.name}`).join(", ")}</td>
                     <td>{total.toLocaleString()}</td>
                     <td><Badge status={o.status} /></td>

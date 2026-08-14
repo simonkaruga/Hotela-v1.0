@@ -1,6 +1,9 @@
 import { authHeaders } from "../../../../lib/auth";
 import { Card } from "../../../../components/Card";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { Avatar } from "../../../../components/Avatar";
+import { HrIcon } from "../../../../components/icons";
 
 type Employee = { id: string; firstName: string; lastName: string; department: string; phone: string | null };
 type Shift = { id: string; date: string; startTime: string; endTime: string; department: string; employee: { firstName: string; lastName: string } };
@@ -38,7 +41,7 @@ export default async function EmployeesPage({
   if (employees === "forbidden") {
     return (
       <>
-        <h1>HR</h1>
+        <PageHeader icon={HrIcon} group="back-office" title="HR" description="Employees and shift scheduling." />
         <p className="mt-4 text-sm text-slate-500">Sign in to view HR.</p>
       </>
     );
@@ -46,7 +49,7 @@ export default async function EmployeesPage({
 
   return (
     <>
-      <h1>HR — Employees &amp; Shifts</h1>
+      <PageHeader icon={HrIcon} group="back-office" title="HR — Employees & Shifts" description="Employees and shift scheduling." />
       <ErrorBanner message={error} />
 
       <h2>Employees</h2>
@@ -56,7 +59,12 @@ export default async function EmployeesPage({
           <tbody>
             {(employees as Employee[]).map((e) => (
               <tr key={e.id}>
-                <td className="font-medium">{e.firstName} {e.lastName}</td>
+                <td>
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={`${e.firstName} ${e.lastName}`} />
+                    <span className="font-medium">{e.firstName} {e.lastName}</span>
+                  </div>
+                </td>
                 <td className="text-slate-600">{e.department}</td>
                 <td className="text-slate-500">{e.phone ?? "—"}</td>
               </tr>
@@ -81,7 +89,12 @@ export default async function EmployeesPage({
           <tbody>
             {(shifts as Shift[]).map((s) => (
               <tr key={s.id}>
-                <td className="font-medium">{s.employee.firstName} {s.employee.lastName}</td>
+                <td>
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={`${s.employee.firstName} ${s.employee.lastName}`} />
+                    <span className="font-medium">{s.employee.firstName} {s.employee.lastName}</span>
+                  </div>
+                </td>
                 <td className="text-slate-500">{new Date(s.date).toLocaleDateString()}</td>
                 <td>{s.startTime} – {s.endTime}</td>
                 <td className="text-slate-600">{s.department}</td>

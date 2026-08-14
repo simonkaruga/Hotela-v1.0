@@ -1,6 +1,10 @@
 import { Card } from "../../../../components/Card";
 import { Badge } from "../../../../components/Badge";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { EmptyState } from "../../../../components/EmptyState";
+import { Avatar } from "../../../../components/Avatar";
+import { SpaIcon } from "../../../../components/icons";
 
 type Treatment = { id: string; name: string; price: string; durationMinutes: number };
 type Reservation = {
@@ -51,12 +55,12 @@ export default async function SpaPage({
 
   return (
     <>
-      <h1>Spa</h1>
+      <PageHeader icon={SpaIcon} group="guest-spend" title="Spa" description="Appointments posted straight to room folios." />
       <ErrorBanner message={error} />
 
       <h2>Book appointment</h2>
       {reservations.length === 0 ? (
-        <p className="mt-2 text-sm text-slate-500">No checked-in guests to book for.</p>
+        <EmptyState icon={SpaIcon} title="No checked-in guests" description="Appointments can be booked once a guest is checked in." />
       ) : (
         <form action="/api/spa/appointments" method="POST" className="mt-3 flex max-w-md flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <label>
@@ -93,7 +97,7 @@ export default async function SpaPage({
 
       <h2>Appointments</h2>
       {appointments.length === 0 ? (
-        <p className="mt-2 text-sm text-slate-500">No appointments yet.</p>
+        <EmptyState icon={SpaIcon} title="No appointments yet" description="Booked treatments will show up here." />
       ) : (
         <Card className="mt-3">
           <table>
@@ -110,7 +114,12 @@ export default async function SpaPage({
             <tbody>
               {appointments.map((a) => (
                 <tr key={a.id}>
-                  <td className="font-medium">{a.reservation.guest.firstName} {a.reservation.guest.lastName}</td>
+                  <td>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={`${a.reservation.guest.firstName} ${a.reservation.guest.lastName}`} />
+                      <span className="font-medium">{a.reservation.guest.firstName} {a.reservation.guest.lastName}</span>
+                    </div>
+                  </td>
                   <td className="text-slate-600">{a.treatment.name} ({Number(a.treatment.price).toLocaleString()})</td>
                   <td>{a.therapistName}</td>
                   <td className="text-slate-500">{new Date(a.scheduledAt).toLocaleString()}</td>

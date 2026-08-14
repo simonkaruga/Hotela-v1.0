@@ -1,4 +1,8 @@
 import { Badge } from "../../../components/Badge";
+import { PageHeader } from "../../../components/PageHeader";
+import { EmptyState } from "../../../components/EmptyState";
+import { Avatar } from "../../../components/Avatar";
+import { FrontDeskIcon } from "../../../components/icons";
 
 type Room = {
   id: string;
@@ -21,38 +25,40 @@ async function getRooms(): Promise<Room[]> {
 export default async function FrontDeskPage() {
   const rooms = await getRooms();
 
-  if (rooms.length === 0) {
-    return (
-      <>
-        <h1>Front Desk — Room Rack</h1>
-        <p className="mt-4 text-sm text-slate-500">No rooms yet.</p>
-      </>
-    );
-  }
-
   return (
     <>
-      <h1>Front Desk — Room Rack</h1>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {rooms.map((room) => {
-          const occupant = room.reservations[0]?.guest;
-          return (
-            <div
-              key={room.id}
-              className={`rounded-lg border p-4 shadow-sm ${occupant ? "border-indigo-200 bg-indigo-50/40" : "border-slate-200 bg-white"}`}
-            >
-              <div className="flex items-baseline justify-between">
-                <span className="text-lg font-semibold text-slate-900">{room.number}</span>
-                <Badge status={room.status} />
+      <PageHeader icon={FrontDeskIcon} group="front-office" title="Front Desk" description="Room rack and live occupancy." />
+      {rooms.length === 0 ? (
+        <EmptyState icon={FrontDeskIcon} title="No rooms yet" description="Rooms will appear here once added to the property." />
+      ) : (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {rooms.map((room) => {
+            const occupant = room.reservations[0]?.guest;
+            return (
+              <div
+                key={room.id}
+                className={`rounded-xl border p-4 shadow-sm transition hover:shadow-md ${occupant ? "border-indigo-200 bg-indigo-50/40" : "border-slate-200 bg-white"}`}
+              >
+                <div className="flex items-baseline justify-between">
+                  <span className="text-lg font-semibold text-slate-900">{room.number}</span>
+                  <Badge status={room.status} />
+                </div>
+                <p className="mt-1 text-xs text-slate-500">{room.roomType.name}</p>
+                <div className="mt-3">
+                  {occupant ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar name={`${occupant.firstName} ${occupant.lastName}`} />
+                      <span className="text-sm font-medium text-slate-800">{occupant.firstName} {occupant.lastName}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-slate-400">Vacant</span>
+                  )}
+                </div>
               </div>
-              <p className="mt-1 text-xs text-slate-500">{room.roomType.name}</p>
-              <p className="mt-3 text-sm font-medium text-slate-800">
-                {occupant ? `${occupant.firstName} ${occupant.lastName}` : <span className="text-slate-400">Vacant</span>}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

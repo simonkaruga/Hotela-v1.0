@@ -2,6 +2,8 @@ import { authHeaders } from "../../../../lib/auth";
 import { Card } from "../../../../components/Card";
 import { Badge } from "../../../../components/Badge";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { AccountsReceivableIcon } from "../../../../components/icons";
 
 type CorporateAccount = { id: string; name: string; creditLimit: string; outstandingBalance: number };
 type ArInvoice = {
@@ -46,7 +48,7 @@ export default async function AccountsReceivablePage({
   if (accounts === "forbidden") {
     return (
       <>
-        <h1>Accounts Receivable</h1>
+        <PageHeader icon={AccountsReceivableIcon} group="back-office" title="Accounts Receivable" description="Corporate billing and credit limits." />
         <p className="mt-4 text-sm text-slate-500">Sign in to view AR.</p>
       </>
     );
@@ -54,7 +56,7 @@ export default async function AccountsReceivablePage({
 
   return (
     <>
-      <h1>Accounts Receivable</h1>
+      <PageHeader icon={AccountsReceivableIcon} group="back-office" title="Accounts Receivable" description="Corporate billing and credit limits." />
       <ErrorBanner message={error} />
 
       <h2>Corporate accounts</h2>

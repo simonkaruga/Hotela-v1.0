@@ -1,5 +1,9 @@
 import { Badge } from "../../../../components/Badge";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { EmptyState } from "../../../../components/EmptyState";
+import { Avatar } from "../../../../components/Avatar";
+import { EventsIcon } from "../../../../components/icons";
 
 type Inquiry = {
   id: string;
@@ -37,7 +41,7 @@ export default async function EventInquiriesPage({
 
   return (
     <>
-      <h1>Events &amp; MICE — Inquiries</h1>
+      <PageHeader icon={EventsIcon} group="back-office" title="Events & MICE" description="Inquiries, room blocks, and quotes." />
       <ErrorBanner message={error} />
 
       <h2>New inquiry</h2>
@@ -51,13 +55,19 @@ export default async function EventInquiriesPage({
       </form>
 
       <h2>Inquiries</h2>
+      {inquiries.length === 0 ? (
+        <EmptyState icon={EventsIcon} title="No inquiries yet" description="Logged event inquiries will show up here." />
+      ) : (
       <div className="mt-3 flex flex-col gap-3">
         {inquiries.map((inq) => (
-          <div key={inq.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div key={inq.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <span className="font-semibold text-slate-900">{inq.contactName}</span>{" "}
-                <span className="text-sm text-slate-500">({inq.contactEmail})</span>
+              <div className="flex items-center gap-2.5">
+                <Avatar name={inq.contactName} size="md" />
+                <div>
+                  <span className="font-semibold text-slate-900">{inq.contactName}</span>{" "}
+                  <span className="text-sm text-slate-500">({inq.contactEmail})</span>
+                </div>
               </div>
               <Badge status={inq.status} />
             </div>
@@ -114,6 +124,7 @@ export default async function EventInquiriesPage({
           </div>
         ))}
       </div>
+      )}
     </>
   );
 }

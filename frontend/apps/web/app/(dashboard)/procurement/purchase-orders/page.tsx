@@ -2,6 +2,8 @@ import { authHeaders } from "../../../../lib/auth";
 import { Card } from "../../../../components/Card";
 import { Badge } from "../../../../components/Badge";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { ProcurementIcon } from "../../../../components/icons";
 
 type Supplier = { id: string; name: string; contact: string | null };
 type InventoryItem = { id: string; name: string; unit: string; quantityOnHand: string; reorderLevel: string };
@@ -49,7 +51,7 @@ export default async function PurchaseOrdersPage({
   if (suppliers === "forbidden") {
     return (
       <>
-        <h1>Procurement</h1>
+        <PageHeader icon={ProcurementIcon} group="back-office" title="Procurement" description="Suppliers, inventory, and purchase orders." />
         <p className="mt-4 text-sm text-slate-500">Sign in to view procurement.</p>
       </>
     );
@@ -57,7 +59,7 @@ export default async function PurchaseOrdersPage({
 
   return (
     <>
-      <h1>Procurement</h1>
+      <PageHeader icon={ProcurementIcon} group="back-office" title="Procurement" description="Suppliers, inventory, and purchase orders." />
       <ErrorBanner message={error} />
 
       <h2>Suppliers</h2>

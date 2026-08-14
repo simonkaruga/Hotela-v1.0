@@ -2,6 +2,9 @@ import { authHeaders } from "../../../lib/auth";
 import { Card } from "../../../components/Card";
 import { Badge } from "../../../components/Badge";
 import { ErrorBanner } from "../../../components/ErrorBanner";
+import { PageHeader } from "../../../components/PageHeader";
+import { Avatar } from "../../../components/Avatar";
+import { LoyaltyIcon } from "../../../components/icons";
 
 type Guest = { id: string; firstName: string; lastName: string; loyaltyPoints: number; loyaltyTier: string };
 type LoyaltyDetail = {
@@ -44,7 +47,7 @@ export default async function LoyaltyPage({
 
   return (
     <>
-      <h1>Loyalty</h1>
+      <PageHeader icon={LoyaltyIcon} group="guest-spend" title="Loyalty" description="Points, tiers, and redemption." />
       <ErrorBanner message={error} />
 
       <h2>Guests</h2>
@@ -61,7 +64,12 @@ export default async function LoyaltyPage({
           <tbody>
             {guests.map((g) => (
               <tr key={g.id} className={g.id === guestId ? "bg-indigo-50/40" : ""}>
-                <td className="font-medium">{g.firstName} {g.lastName}</td>
+                <td>
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={`${g.firstName} ${g.lastName}`} />
+                    <span className="font-medium">{g.firstName} {g.lastName}</span>
+                  </div>
+                </td>
                 <td>{g.loyaltyPoints}</td>
                 <td><span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${TIER_STYLES[g.loyaltyTier] ?? "bg-slate-100 text-slate-600"}`}>{g.loyaltyTier}</span></td>
                 <td><a href={`/loyalty?guestId=${g.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">View</a></td>

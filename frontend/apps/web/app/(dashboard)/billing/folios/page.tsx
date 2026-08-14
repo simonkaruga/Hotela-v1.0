@@ -1,6 +1,10 @@
 import { Card } from "../../../../components/Card";
 import { Badge } from "../../../../components/Badge";
 import { ErrorBanner } from "../../../../components/ErrorBanner";
+import { PageHeader } from "../../../../components/PageHeader";
+import { EmptyState } from "../../../../components/EmptyState";
+import { Avatar } from "../../../../components/Avatar";
+import { FoliosIcon } from "../../../../components/icons";
 
 type Folio = {
   id: string;
@@ -30,10 +34,10 @@ export default async function FoliosPage({
 
   return (
     <>
-      <h1>Folios</h1>
+      <PageHeader icon={FoliosIcon} group="guest-spend" title="Folios" description="Charges, payments, and settlement." />
       <ErrorBanner message={error} />
       {folios.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-500">None yet.</p>
+        <EmptyState icon={FoliosIcon} title="No folios yet" description="Folios are created automatically with each reservation." />
       ) : (
         <Card className="mt-4">
           <table>
@@ -49,7 +53,12 @@ export default async function FoliosPage({
             <tbody>
               {folios.map((f) => (
                 <tr key={f.id}>
-                  <td className="font-medium">{f.reservation.guest.firstName} {f.reservation.guest.lastName}</td>
+                  <td>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={`${f.reservation.guest.firstName} ${f.reservation.guest.lastName}`} />
+                      <span className="font-medium">{f.reservation.guest.firstName} {f.reservation.guest.lastName}</span>
+                    </div>
+                  </td>
                   <td>{f.reservation.room?.number ?? "—"}</td>
                   <td><Badge status={f.status} /></td>
                   <td className={f.balance > 0 ? "font-medium text-amber-700" : "text-slate-500"}>
