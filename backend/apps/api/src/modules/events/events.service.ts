@@ -1,17 +1,27 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateInquiryDto } from './dto/create-inquiry.dto';
 import { CreateRoomBlockDto } from './dto/create-room-block.dto';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
-  createInquiry(dto: CreateInquiryDto) {
-    return this.prisma.eventInquiry.create({
+  async createInquiry(dto: CreateInquiryDto) {
+    const inquiry = await this.prisma.eventInquiry.create({
       data: { ...dto, eventDate: new Date(dto.eventDate) },
     });
+    await this.notifications.notify(
+      dto.propertyId,
+      'EVENT_INQUIRY',
+      `New event inquiry from ${dto.contactName} for ${dto.expectedGuests} guests`,
+    );
+    return inquiry;
   }
 
   findInquiries(propertyId?: string) {

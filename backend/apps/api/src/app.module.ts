@@ -15,6 +15,13 @@ import { ProcurementModule } from './modules/procurement/procurement.module';
 import { AccountsReceivableModule } from './modules/accounting/accounts-receivable/accounts-receivable.module';
 import { HrModule } from './modules/hr/hr.module';
 import { EventsModule } from './modules/events/events.module';
+import { NightAuditModule } from './modules/night-audit/night-audit.module';
+import { HousekeepingModule } from './modules/housekeeping/housekeeping.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { RatesModule } from './modules/rates/rates.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { PropertiesModule } from './modules/properties/properties.module';
 
 @Controller()
 class HealthController {
@@ -42,6 +49,13 @@ class HealthController {
     AccountsReceivableModule,
     HrModule,
     EventsModule,
+    NightAuditModule,
+    HousekeepingModule,
+    MaintenanceModule,
+    RatesModule,
+    NotificationsModule,
+    AuditModule,
+    PropertiesModule,
   ],
   controllers: [HealthController],
 })

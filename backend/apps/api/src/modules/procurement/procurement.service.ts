@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
@@ -8,7 +9,10 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class ProcurementService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   createSupplier(dto: CreateSupplierDto) {
     return this.prisma.supplier.create({ data: dto });
@@ -83,6 +87,17 @@ export class ProcurementService {
         },
       }),
     ]);
+
+    for (const item of po.items) {
+      const updated = await this.prisma.inventoryItem.findUnique({ where: { id: item.inventoryItemId } });
+      if (updated && Number(updated.quantityOnHand) < Number(updated.reorderLevel)) {
+        await this.notifications.notify(
+          po.propertyId,
+          'LOW_STOCK',
+          `${updated.name} is still below reorder level (${updated.quantityOnHand} ${updated.unit} on hand, reorder at ${updated.reorderLevel})`,
+        );
+      }
+    }
 
     return this.prisma.purchaseOrder.findUnique({
       where: { id },

@@ -16,6 +16,13 @@ import {
   ProcurementIcon,
   HrIcon,
   EventsIcon,
+  ReportsIcon,
+  HousekeepingIcon,
+  MaintenanceIcon,
+  RatesIcon,
+  AuditIcon,
+  NotificationsBellIcon,
+  PropertyIcon,
 } from "./icons";
 
 const NAV_GROUPS = [
@@ -26,6 +33,8 @@ const NAV_GROUPS = [
       { href: "/front-desk", label: "Front Desk", icon: FrontDeskIcon },
       { href: "/reservations", label: "Reservations", icon: ReservationsIcon },
       { href: "/guests", label: "Guests", icon: GuestsIcon },
+      { href: "/housekeeping", label: "Housekeeping", icon: HousekeepingIcon },
+      { href: "/maintenance", label: "Maintenance", icon: MaintenanceIcon },
     ],
   },
   {
@@ -45,6 +54,17 @@ const NAV_GROUPS = [
       { href: "/procurement/purchase-orders", label: "Procurement", icon: ProcurementIcon },
       { href: "/hr/employees", label: "HR", icon: HrIcon },
       { href: "/events/inquiries", label: "Events & MICE", icon: EventsIcon },
+      { href: "/rates/plans", label: "Rate Plans", icon: RatesIcon },
+      { href: "/reports/dashboard", label: "Daily Report", icon: ReportsIcon },
+      { href: "/night-audit", label: "Night Audit", icon: ReportsIcon },
+    ],
+  },
+  {
+    label: "Admin",
+    links: [
+      { href: "/admin/properties", label: "Properties", icon: PropertyIcon },
+      { href: "/notifications", label: "Notifications", icon: NotificationsBellIcon },
+      { href: "/admin/audit-log", label: "Audit Log", icon: AuditIcon },
     ],
   },
 ];
