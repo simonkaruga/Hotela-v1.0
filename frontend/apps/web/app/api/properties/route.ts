@@ -7,5 +7,8 @@ export async function POST(request: NextRequest) {
     slug: String(form.get("slug") ?? ""),
     timezone: String(form.get("timezone") ?? "") || undefined,
     currency: String(form.get("currency") ?? "") || undefined,
+    tagline: String(form.get("tagline") ?? "") || undefined,
+    heroImageUrl: String(form.get("heroImageUrl") ?? "") || undefined,
+    logoUrl: String(form.get("logoUrl") ?? "") || undefined,
   }));
 }

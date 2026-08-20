@@ -1,33 +1,52 @@
 import { LoginScene } from "../../../components/LoginScene";
 
+type Property = { name: string; tagline: string | null; heroImageUrl: string | null };
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+async function getProperty(): Promise<Property | null> {
+  const res = await fetch(`${apiUrl}/properties`, { cache: "no-store" });
+  if (!res.ok) return null;
+  const properties: Property[] = await res.json();
+  return properties[0] ?? null;
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
+  const property = await getProperty();
 
   return (
     <main className="flex min-h-screen bg-slate-50">
-      <div className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 lg:block">
-        <div className="absolute inset-0">
-          <LoginScene />
-        </div>
+      <div
+        className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 bg-cover bg-center lg:block"
+        style={property?.heroImageUrl ? { backgroundImage: `url(${property.heroImageUrl})` } : undefined}
+      >
+        {property?.heroImageUrl ? (
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/20" />
+        ) : (
+          <div className="absolute inset-0">
+            <LoginScene />
+          </div>
+        )}
 
         <div className="relative z-10 flex h-full flex-col justify-between p-12">
           <div className="text-lg font-semibold tracking-tight text-white">Hotela</div>
 
           <div className="max-w-md">
             <p className="text-3xl font-semibold normal-case leading-tight tracking-normal text-white">
-              The hotel OS,<br />built for Naivasha and beyond.
+              {property?.name ?? "The hotel OS"}
             </p>
             <p className="mt-4 text-sm leading-relaxed text-indigo-200/80">
-              One system for reservations, front desk, folios, restaurant &amp; spa,
-              accounting, and everything in between — running Naivasha Lakeside Resort.
+              {property?.tagline ??
+                "One system for reservations, front desk, folios, restaurant & spa, accounting, and everything in between."}
             </p>
           </div>
 
-          <p className="text-xs text-indigo-300/50">Naivasha Lakeside Resort · Avinaya Solutions</p>
+          <p className="text-xs text-indigo-300/50">{property?.name ?? "Hotela"} · powered by Hotela</p>
         </div>
       </div>
 

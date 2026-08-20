@@ -40,6 +40,7 @@ type Folio = { status: string; balance: number };
 type HousekeepingTask = { status: string };
 type MaintenanceTicket = { status: string; priority: string; description: string; room: { number: string } | null };
 type Notification = { id: string; type: string; message: string; createdAt: string };
+type Property = { name: string; heroImageUrl: string | null };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -47,6 +48,13 @@ async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(`${apiUrl}${path}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
   return res.json();
+}
+
+async function getProperty(): Promise<Property | null> {
+  const res = await fetch(`${apiUrl}/properties`, { cache: "no-store" });
+  if (!res.ok) return null;
+  const properties: Property[] = await res.json();
+  return properties[0] ?? null;
 }
 
 async function getNotifications(propertyId: string): Promise<Notification[] | null> {
@@ -154,12 +162,13 @@ export default async function DashboardHomePage() {
   const session = await getSession();
   const propertyId = session?.propertyId ?? "";
 
-  const [reservations, rooms, folios, housekeepingTasks, maintenanceTickets] = await Promise.all([
+  const [reservations, rooms, folios, housekeepingTasks, maintenanceTickets, property] = await Promise.all([
     getJson<Reservation[]>("/reservations"),
     getJson<Room[]>("/rooms"),
     getJson<Folio[]>("/folios"),
     getJson<HousekeepingTask[]>(`/housekeeping/tasks?propertyId=${propertyId}`),
     getJson<MaintenanceTicket[]>(`/maintenance/tickets?propertyId=${propertyId}`),
+    getProperty(),
   ]);
   const notifications = session ? await getNotifications(propertyId) : null;
 
@@ -186,17 +195,24 @@ export default async function DashboardHomePage() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-8 py-10">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        />
+      <div
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 bg-cover bg-center px-8 py-10"
+        style={property?.heroImageUrl ? { backgroundImage: `url(${property.heroImageUrl})` } : undefined}
+      >
+        {property?.heroImageUrl ? (
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-slate-950/30" />
+        ) : (
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+            }}
+          />
+        )}
         <div className="relative">
           <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300/70">{today}</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Naivasha Lakeside Resort</h1>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">{property?.name ?? "Hotela"}</h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-indigo-200/70">
             Live overview across front desk, guest spend, and back office.
           </p>

@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
 export class PropertiesService {
@@ -12,5 +13,13 @@ export class PropertiesService {
 
   findAll() {
     return this.prisma.property.findMany({ orderBy: { name: 'asc' } });
+  }
+
+  async update(id: string, dto: UpdatePropertyDto) {
+    const property = await this.prisma.property.findUnique({ where: { id } });
+    if (!property) {
+      throw new NotFoundException(`Property ${id} not found`);
+    }
+    return this.prisma.property.update({ where: { id }, data: dto });
   }
 }

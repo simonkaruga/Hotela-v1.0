@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUrl, Matches } from 'class-validator';
 
 export class CreatePropertyDto {
   @IsString()
@@ -16,4 +16,16 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @IsOptional()
+  @IsString()
+  tagline?: string;
+
+  @IsOptional()
+  @IsUrl()
+  heroImageUrl?: string;
+
+  @IsOptional()
+  @IsUrl()
+  logoUrl?: string;
 }

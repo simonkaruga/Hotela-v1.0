@@ -13,12 +13,15 @@ datasource db {
 }
 
 model Property {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  timezone  String   @default("Africa/Nairobi")
-  currency  String   @default("KES")
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  timezone     String   @default("Africa/Nairobi")
+  currency     String   @default("KES")
+  tagline      String?
+  heroImageUrl String?
+  logoUrl      String?
+  createdAt    DateTime @default(now())
 
   roomTypes    RoomType[]
   rooms        Room[]

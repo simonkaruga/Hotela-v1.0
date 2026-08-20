@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -20,5 +21,12 @@ export class PropertiesController {
   @Roles(UserRole.GENERAL_MANAGER)
   create(@Body() dto: CreatePropertyDto) {
     return this.propertiesService.create(dto);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.GENERAL_MANAGER)
+  update(@Param('id') id: string, @Body() dto: UpdatePropertyDto) {
+    return this.propertiesService.update(id, dto);
   }
 }
