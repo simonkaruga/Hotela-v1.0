@@ -73,9 +73,9 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1 px-3 py-5">
-      {NAV_GROUPS.map((group) => (
-        <div key={group.label} className="mb-4">
+    <nav className="flex flex-col px-3 py-5">
+      {NAV_GROUPS.map((group, i) => (
+        <div key={group.label} className={i === 0 ? "mb-5" : "mb-5 border-t border-white/5 pt-5"}>
           <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
             {group.label}
           </p>
@@ -84,7 +84,10 @@ export function Nav() {
               const active = pathname === link.href;
               const LinkIcon = link.icon;
               return (
-                <li key={link.href}>
+                <li key={link.href} className="relative">
+                  {active && (
+                    <span className="absolute -left-3 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-violet-400" />
+                  )}
                   <Link
                     href={link.href}
                     className={
@@ -95,7 +98,6 @@ export function Nav() {
                   >
                     <LinkIcon className={active ? "h-4 w-4 text-violet-400" : "h-4 w-4 text-white/30"} />
                     {link.label}
-                    {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-400" />}
                   </Link>
                 </li>
               );
