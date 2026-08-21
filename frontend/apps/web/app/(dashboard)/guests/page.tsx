@@ -2,7 +2,7 @@ import { Card } from "../../../components/Card";
 import { PageHeader } from "../../../components/PageHeader";
 import { EmptyState } from "../../../components/EmptyState";
 import { Avatar } from "../../../components/Avatar";
-import { GuestsIcon } from "../../../components/icons";
+import { GuestsIcon, StarIcon } from "../../../components/icons";
 
 type Guest = {
   id: string;
@@ -52,7 +52,14 @@ export default async function GuestsPage() {
                   </td>
                   <td className="text-slate-500">{g.email ?? "—"}</td>
                   <td className="text-slate-500">{g.phone ?? "—"}</td>
-                  <td>{g.vip && <span className="text-amber-500">★</span>}</td>
+                  <td>
+                    {g.vip && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                        <StarIcon className="h-3 w-3" />
+                        VIP
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
